@@ -78,14 +78,42 @@ async function loadLatestTopic(categoryId) {
   }
 }
 
-async function loadCategoryData() {
-  const data = await fetchJSON("/categories.json");
-  const categories = data.category_list.categories;
+// Category objects coming from Discourse's `site.categories` are Ember
+// model instances, not plain JSON — object-spreading them isn't
+// reliable, so pick fields out explicitly. A couple of fields are read
+// with a snake_case/camelCase fallback since Discourse hasn't been
+// fully consistent about that across its Category model over time.
+function toPlainCategory(cat) {
+  return {
+    id: cat.id,
+    name: cat.name,
+    slug: cat.slug,
+    color: cat.color,
+    text_color: cat.text_color ?? cat.textColor,
+    description_text: cat.description_text ?? cat.descriptionText ?? "",
+    topic_count: cat.topic_count ?? cat.topicCount ?? 0,
+    parent_category_id: cat.parent_category_id ?? cat.parentCategoryId ?? null,
+    position: cat.position,
+    uploaded_logo: cat.uploaded_logo ?? cat.uploadedLogo,
+  };
+}
+
+async function loadCategoryData(api) {
+  // Discourse's own `site` service already holds the FULL category
+  // tree (parents and subcategories together) — used here instead of
+  // fetching /categories.json ourselves, since that endpoint turned
+  // out not to include subcategories in its default response and
+  // there was no reliably-guessable query param to fix that. `site`
+  // is the same source Discourse's own category pickers rely on.
+  const site =
+    api.container.lookup("service:site") || api.container.lookup("site:main");
+  const categories = (site && site.categories) || [];
+
   return Promise.all(
-    categories.map(async (cat) => ({
-      ...cat,
-      rpLatest: await loadLatestTopic(cat.id),
-    }))
+    categories.map(async (cat) => {
+      const plain = toPlainCategory(cat);
+      return { ...plain, rpLatest: await loadLatestTopic(plain.id) };
+    })
   );
 }
 
@@ -163,6 +191,7 @@ function buildHtml(categories) {
     }
   });
   top.sort((a, b) => (a.position ?? 0) - (b.position ?? 0));
+  byParent.forEach((children) => children.sort((a, b) => (a.position ?? 0) - (b.position ?? 0)));
 
   // Categories without children are grouped together into ONE shared
   // block (rows separated only by a thin border, no per-category card)
@@ -245,7 +274,7 @@ export default apiInitializer((api) => {
     `;
 
     try {
-      const categories = await loadCategoryData();
+      const categories = await loadCategoryData(api);
       if (myToken !== renderToken) {
         return; // navigated away while fetching
       }
