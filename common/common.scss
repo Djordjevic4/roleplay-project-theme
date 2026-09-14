@@ -24,6 +24,36 @@
   --rp-content-max: 1250px;
   --rp-sidebar-width: 300px;
   --rp-gap: 18px;
+
+  // Discourse's own core SCSS uses these color-scheme custom
+  // properties everywhere (tables, modals, admin panels, anything
+  // this theme hasn't explicitly targeted) — they come from whatever
+  // color palette is active in Admin → Customize → Colors. Without
+  // overriding them here, any native element not explicitly styled
+  // above falls back to that palette's own colors, which is why some
+  // elements (like the topic list) stayed light/white regardless of
+  // the --rp-* tokens used elsewhere in this file.
+  --primary: #f4f6f8;
+  --primary-medium: #8793a3;
+  --primary-low-mid: #2d333c;
+  --primary-low: #21262d;
+  --primary-very-low: #161b22;
+  --secondary: #0b0e13;
+  --secondary-low: #161b22;
+  --tertiary: #{$primary_color};
+  --tertiary-low: #1c2c47;
+  --tertiary-medium: #{$primary_color_hover};
+  --quaternary: #{$primary_color};
+  --header_background: #0b0e13;
+  --header_primary: #f4f6f8;
+  --highlight: #{$primary_color};
+  --highlight-medium: #{$primary_color_hover};
+  --highlight-low: #1c2c47;
+  --danger: #ff4b4b;
+  --danger-low: #3a1a1a;
+  --success: #16c46a;
+  --success-low: #113322;
+  --love: #ff4b4b;
 }
 
 // -----------------------------------------------------------------
@@ -1188,34 +1218,108 @@ table.category-list,
 // -----------------------------------------------------------------
 // Category show page (topic list) — pins/locks, replies/views, activity
 // -----------------------------------------------------------------
+// Confirmed via a live install's rendered <table class="topic-list">
+// outerHTML — selectors below target the real markup, not guesses.
 .topic-list {
+  width: 100%;
+  border-collapse: collapse;
   background: var(--rp-panel);
   border: 1px solid var(--rp-border);
   border-radius: var(--rp-radius-md);
   overflow: hidden;
 
-  .topic-list-item {
-    border-bottom: 1px solid var(--rp-border);
+  caption {
+    display: none;
+  }
 
-    &:hover {
-      background: #1b202a;
+  .topic-list-header {
+    .topic-list-data {
+      background: var(--rp-panel-header);
+      border-bottom: 1px solid var(--rp-border);
+      color: var(--rp-text-muted);
+      font-size: 0.75em;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      padding: 10px 12px;
+      text-align: left;
+
+      &.num {
+        text-align: center;
+      }
+    }
+
+    button {
+      background: none;
+      border: none;
+      color: inherit;
+      font: inherit;
+      text-transform: inherit;
+      letter-spacing: inherit;
+      padding: 0;
     }
   }
 
-  .main-link .title {
+  .topic-list-item {
+    border-bottom: 1px solid var(--rp-border);
+    background: var(--rp-panel);
+    transition: background-color 0.15s ease;
+
+    &:last-child {
+      border-bottom: none;
+    }
+
+    &:hover {
+      background: #1b212a;
+    }
+
+    .topic-list-data {
+      padding: 12px;
+      vertical-align: middle;
+    }
+  }
+
+  .main-link {
+    .title {
+      color: var(--rp-text);
+      font-weight: 600;
+      text-decoration: none;
+    }
+
+    .topic-status svg {
+      color: var(--rp-blue-hover);
+    }
+
+    .link-bottom-line {
+      color: var(--rp-text-muted);
+      font-size: 0.82em;
+      margin-top: 4px;
+    }
+  }
+
+  .posters img.avatar {
+    border-radius: var(--rp-radius-sm);
+  }
+
+  td.num {
+    text-align: center;
+
+    .number {
+      color: var(--rp-text);
+      font-weight: 700;
+    }
+  }
+
+  .badge-posts {
     color: var(--rp-text);
-    font-weight: 600;
+    text-decoration: none;
   }
 
-  .link-bottom-line,
-  .discourse-tags {
-    color: var(--rp-text-muted);
-  }
-
-  .posts,
-  .views,
-  .activity {
-    color: var(--rp-text-muted);
+  .age {
+    .post-activity {
+      color: var(--rp-text-muted);
+      text-decoration: none;
+    }
   }
 }
 
