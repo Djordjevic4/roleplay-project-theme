@@ -1,4 +1,10 @@
 export default {
+  // Defensive: if this outlet ever fires more than once for the same
+  // page render (seen on some setups), only the first instance mounts.
+  shouldRender() {
+    return !document.querySelector(".rp-brand");
+  },
+
   setupComponent(args, component) {
     component.setProperties({
       settings,

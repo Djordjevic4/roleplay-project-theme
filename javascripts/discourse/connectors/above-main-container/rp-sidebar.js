@@ -57,7 +57,7 @@ function mapHourly(hourly) {
 
 export default {
   shouldRender() {
-    return settings.show_sidebar_widgets;
+    return settings.show_sidebar_widgets && !document.querySelector(".rp-sidebar");
   },
 
   setupComponent(args, component) {

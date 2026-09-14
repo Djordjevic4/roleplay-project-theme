@@ -1,6 +1,6 @@
 export default {
   shouldRender() {
-    return settings.show_custom_search_bar;
+    return settings.show_custom_search_bar && !document.querySelector(".rp-topbar");
   },
 
   setupComponent(args, component) {
