@@ -809,6 +809,18 @@ body.rp-brand-active {
   display: none !important;
 }
 
+// Belt-and-suspenders for the categories index specifically:
+// rp-categories.js already hides every native child of #main-outlet
+// there, but hide the native "Latest" panel by class too in case it
+// ever renders somewhere outside that pass. NOT touching
+// `.category-list` here — that class is also used (and deliberately
+// left visible/restyled) for the "Subforums" box on individual
+// category pages further down this file.
+body.category-list .latest-topic-list,
+body.category-list .top-lists {
+  display: none !important;
+}
+
 // -----------------------------------------------------------------
 // Custom category cards (javascripts/discourse/api-initializers/
 // rp-categories.js). These replace the native category list entirely
@@ -885,6 +897,12 @@ body.rp-brand-active {
   border-radius: 50%;
   font-size: 0.95em;
   font-weight: 700;
+
+  &.rp-cat-badge-image img {
+    width: 20px;
+    height: 20px;
+    object-fit: contain;
+  }
 }
 
 .rp-cat-text {

@@ -92,6 +92,12 @@ async function loadCategoryData() {
 function badgeHtml(cat) {
   const color = cat.color ? `#${cat.color}` : "#1685FF";
   const textColor = cat.text_color ? `#${cat.text_color}` : "#fff";
+  const logoUrl = cat.uploaded_logo?.url;
+  if (logoUrl) {
+    return `<span class="rp-cat-badge rp-cat-badge-image" style="background:${color}">
+        <img src="${escapeHtml(logoUrl)}" alt="" width="20" height="20">
+      </span>`;
+  }
   const inner = escapeHtml((cat.name || "?").charAt(0).toUpperCase());
   return `<span class="rp-cat-badge" style="background:${color};color:${textColor}">${inner}</span>`;
 }
@@ -134,6 +140,12 @@ function sectionHtml(parent, children) {
     </div>`;
 }
 
+function looseSectionHtml(cats) {
+  return `<div class="rp-cat-section"><div class="rp-cat-section-body">${cats
+    .map(rowHtml)
+    .join("")}</div></div>`;
+}
+
 function buildHtml(categories) {
   const byParent = new Map();
   const top = [];
@@ -149,15 +161,32 @@ function buildHtml(categories) {
   });
   top.sort((a, b) => (a.position ?? 0) - (b.position ?? 0));
 
-  return top
-    .map((cat) => {
-      const children = byParent.get(cat.id);
-      if (children && children.length) {
-        return sectionHtml(cat, children);
-      }
-      return `<div class="rp-cat-section"><div class="rp-cat-section-body">${rowHtml(cat)}</div></div>`;
-    })
-    .join("");
+  // Categories without children are grouped together into ONE shared
+  // block (rows separated only by a thin border, no per-category card)
+  // rather than each getting its own section — otherwise a flat,
+  // ungrouped category list (no "Announcements"/"Community" parents
+  // configured) renders as a stack of isolated cards with big gaps.
+  let html = "";
+  let loose = [];
+  const flushLoose = () => {
+    if (loose.length) {
+      html += looseSectionHtml(loose);
+      loose = [];
+    }
+  };
+
+  top.forEach((cat) => {
+    const children = byParent.get(cat.id);
+    if (children && children.length) {
+      flushLoose();
+      html += sectionHtml(cat, children);
+    } else {
+      loose.push(cat);
+    }
+  });
+  flushLoose();
+
+  return html;
 }
 
 function isCategoriesIndexRoute(router) {
