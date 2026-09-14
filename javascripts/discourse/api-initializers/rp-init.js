@@ -32,6 +32,28 @@ function markParentRows(api) {
   });
 }
 
+function isCategoriesIndexRoute(router) {
+  const name = router?.currentRouteName || "";
+  return name.startsWith("discovery.categories");
+}
+
+// rp-sidebar.js also tries to hide itself reactively via a router
+// event, but that turned out not to fire reliably for every kind of
+// client-side transition on this install (confirmed: .rp-sidebar was
+// still found in the DOM, still occupying flex space, on a category
+// page after an in-app link click). api.onPageChange is the mechanism
+// already proven reliable elsewhere in this theme (rp-categories.js,
+// rp-category-header.js both depend on it working every time), so it
+// authoritatively controls visibility here too — a plain style toggle
+// that doesn't depend on the connector's own internal state.
+function updateSidebarVisibility(api) {
+  const router = api.container.lookup("service:router");
+  const shouldShow = isCategoriesIndexRoute(router);
+  document.querySelectorAll(".rp-sidebar").forEach((el) => {
+    el.style.display = shouldShow ? "" : "none";
+  });
+}
+
 // Forces the real 2-column layout (main content + right sidebar) by
 // physically moving #main-outlet and the sidebar's own root element
 // into a wrapper we create and fully control. This is deliberately NOT
@@ -73,20 +95,16 @@ function ensureLayoutGrid() {
 export default apiInitializer((api) => {
   api.onPageChange(() => {
     setTimeout(() => {
+      updateSidebarVisibility(api);
       ensureLayoutGrid();
       markParentRows(api);
     }, 80);
   });
 
-  // Also react directly to DOM changes, not just page-change events.
-  // The sidebar's own visibility is driven independently (by a router
-  // event inside rp-sidebar.js) and isn't guaranteed to update before
-  // or after this file's page-change timer — if it disappears just
-  // after ensureLayoutGrid() already saw it present, #main-outlet is
-  // left stuck alone inside the flex wrapper (narrow column, huge
-  // empty space beside it) until something else triggers a re-check.
-  // ensureLayoutGrid() is cheap and a no-op once state already matches,
-  // so reacting to any mutation here is safe.
+  // Extra safety net: react to arbitrary DOM changes too, not just
+  // page-change events, in case something else mutates the DOM around
+  // #main-outlet/.rp-sidebar between navigations. ensureLayoutGrid()
+  // is cheap and a no-op once state already matches, so this is safe.
   let debounceTimer = null;
   const observer = new MutationObserver(() => {
     clearTimeout(debounceTimer);
