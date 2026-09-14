@@ -77,7 +77,8 @@ untouched rather than leaving a blank page.
 | `show_custom_header_nav` | Turn off the custom nav bar entirely (escape hatch) |
 | `show_custom_search_bar` | Turn off the custom Home+Search bar (escape hatch) |
 | `show_sidebar_widgets` | Master switch for the whole right sidebar |
-| `show_server_status` / `show_server_time` / `show_server_weather` | Toggle each widget individually |
+| `show_server_status` / `show_server_time` / `show_server_weather` / `show_recent_activity` | Toggle each of the 4 sidebar widgets individually |
+| `recent_activity_count` | How many topics the Recent Activity widget shows (from `/latest.json`) |
 | `server_status_api_url` | See "Connecting your APIs" below |
 | `server_name`, `server_ip`, `server_platform_label`, `server_max_players` | Static fallback values for the Status widget |
 | `server_status_fallback_state`, `server_status_fallback_players` | What to show when no API is configured |
