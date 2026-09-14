@@ -281,77 +281,41 @@ body.rp-brand-active {
   border-radius: 50%;
 }
 
-// The theme's own search box (in the secondary bar) replaces the
-// native header search icon on desktop; kept for mobile fallback.
-@media (min-width: 768px) {
-  #search-button {
-    display: none;
-  }
+// -----------------------------------------------------------------
+// Banner (replaces the old Home + Search bar). Native header search
+// icon stays visible now — there's no theme-provided search box to
+// replace it with.
+// -----------------------------------------------------------------
+.rp-banner {
+  position: relative;
+  height: 220px;
+  margin-bottom: var(--rp-gap);
+  background-size: cover;
+  background-position: center;
+  border-bottom: 1px solid var(--rp-border);
+  overflow: hidden;
+  display: flex;
+  align-items: flex-end;
 }
 
-// -----------------------------------------------------------------
-// Secondary bar: Home + Search
-// -----------------------------------------------------------------
-.rp-topbar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+.rp-banner-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(11, 14, 19, 0) 40%, rgba(11, 14, 19, 0.85) 100%);
+}
+
+.rp-banner-welcome {
+  position: relative;
+  z-index: 1;
+  padding: 0 24px 20px;
   max-width: var(--rp-content-max);
   margin: 0 auto;
-  height: var(--rp-topbar-height);
-  padding: 0 14px;
-  border-bottom: 1px solid var(--rp-border);
-}
-
-.rp-home-link {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  color: var(--rp-text);
-  font-weight: 600;
-  font-size: 0.9em;
-  text-decoration: none;
-
-  .d-icon {
-    color: var(--rp-text-muted);
-  }
-
-  &:hover {
-    color: var(--rp-blue-hover);
-  }
-}
-
-.rp-search-trigger {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  width: 280px;
-  max-width: 45vw;
-  height: 34px;
-  padding: 0 12px;
-  background: var(--rp-panel);
-  border: 1px solid var(--rp-border);
-  border-radius: var(--rp-radius-sm);
-  color: var(--rp-text-muted);
-  font-size: 0.85em;
-  cursor: pointer;
-  transition: border-color 0.15s ease;
-
-  .d-icon {
-    font-size: 0.9em;
-    opacity: 0.7;
-  }
-
-  .rp-search-placeholder {
-    text-align: left;
-  }
-
-  &:hover,
-  &:focus-visible {
-    border-color: var(--rp-blue);
-    color: var(--rp-text);
-    outline: none;
-  }
+  width: 100%;
+  box-sizing: border-box;
+  color: #fff;
+  font-size: 1.8em;
+  font-weight: 800;
+  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.6);
 }
 
 // Native breadcrumbs on category pages keep functioning; just
@@ -1452,13 +1416,13 @@ table.category-list,
     padding-top: 12px;
   }
 
-  .rp-topbar {
-    padding: 0 10px;
+  .rp-banner {
+    height: 140px;
   }
 
-  .rp-search-trigger {
-    width: 100%;
-    max-width: 60vw;
+  .rp-banner-welcome {
+    font-size: 1.3em;
+    padding: 0 14px 14px;
   }
 
   table.category-list tr,
@@ -1476,10 +1440,6 @@ table.category-list,
     max-width: none;
     text-align: left;
     margin-top: 8px;
-  }
-
-  #search-button {
-    display: flex;
   }
 
   .rp-weather-stats,

@@ -1,15 +1,6 @@
-<div class="rp-topbar">
-  <a href="/" class="rp-home-link">
-    {{d-icon "house"}}<span>Home</span>
-  </a>
-
-  <button
-    type="button"
-    class="rp-search-trigger"
-    {{on "click" this.openSearch}}
-    aria-label="Search"
-  >
-    {{d-icon "magnifying-glass"}}
-    <span class="rp-search-placeholder">Search...</span>
-  </button>
+<div class="rp-banner" style={{this.bannerStyle}}>
+  <div class="rp-banner-overlay"></div>
+  {{#if this.showWelcome}}
+    <div class="rp-banner-welcome">Welcome back, {{this.welcomeName}}!</div>
+  {{/if}}
 </div>

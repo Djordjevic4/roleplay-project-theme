@@ -84,7 +84,9 @@ untouched rather than leaving a blank page.
 | `ucp_url` | UCP nav link target (default `https://bucp.roleplayproject.net`) |
 | `staff_url` | STAFF nav link target |
 | `show_custom_header_nav` | Turn off the custom nav bar entirely (escape hatch) |
-| `show_custom_search_bar` | Turn off the custom Home+Search bar (escape hatch) |
+| `show_banner` | Turn the banner below the header on/off |
+| `banner_image` | Banner background image upload — banner stays hidden if empty |
+| `banner_show_welcome_text` | Show "Welcome back, {name}!" overlay for logged-in users |
 | `show_sidebar_widgets` | Master switch for the whole right sidebar |
 | `show_server_status` / `show_server_time` / `show_server_weather` / `show_recent_activity` | Toggle each of the 4 sidebar widgets individually |
 | `recent_activity_count` | How many topics the Recent Activity widget shows (from `/latest.json`) |
@@ -176,8 +178,10 @@ worth verifying on your actual install:
 - ✅ Header: dark bar, split-color brand text, center nav (UCP, FORUMS,
   STAFF) with icons, FORUMS dropdown, native right-side user/notification/
   message icons kept functional and restyled.
-- ✅ Secondary bar: Home link + dark search field that opens Discourse's
-  real search.
+- ✅ Banner below the header (replaces the earlier Home + Search bar),
+  image configurable via theme setting, optional "Welcome back, {name}!"
+  overlay for logged-in users. Native header search icon is visible
+  again since there's no theme-provided search box to replace it with.
 - ✅ Two-column layout (~78/22 split, 18px gap), responsive stacking.
 - ✅ "Forums" title + blue "+ New Topic" button (native button, restyled).
 - ✅ Category sections as dark panels (`#161b22` bg, `#21262d` border,

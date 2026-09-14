@@ -50,7 +50,17 @@ show_custom_brand:
 show_custom_header_nav:
   default: true
   type: bool
-show_custom_search_bar:
+
+# --- Banner (replaces the old Home + Search bar) --------------------
+# Shown below the header, above the main content. Hidden automatically
+# if no image is uploaded, so it never renders as an empty box.
+show_banner:
+  default: true
+  type: bool
+banner_image:
+  type: upload
+  default: ""
+banner_show_welcome_text:
   default: true
   type: bool
 
