@@ -379,9 +379,18 @@ body.rp-brand-active {
   margin: 0 auto;
 }
 
+// Discourse's native CSS applies its own width/max-width rules to
+// #main-outlet (sized for the normal single-column layout) — those
+// still apply here since we never override that specific property
+// elsewhere, capping this at a narrow width no matter what `flex`
+// says. #rp-layout-row > #main-outlet has higher specificity (two ID
+// selectors) than a plain #main-outlet rule, so explicitly clearing
+// width/max-width here wins.
 #rp-layout-row > #main-outlet {
   flex: 1 1 0;
   min-width: 0;
+  max-width: none !important;
+  width: auto !important;
   order: 1;
 }
 
@@ -405,6 +414,8 @@ body.rp-brand-active {
   > #main-outlet {
     flex: 1 1 0;
     min-width: 0;
+    max-width: none !important;
+    width: auto !important;
   }
 }
 
