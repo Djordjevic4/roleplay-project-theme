@@ -69,13 +69,20 @@ export default apiInitializer((api) => {
     const heading = document.querySelector(".category-heading");
     if (heading) {
       heading.insertAdjacentHTML("beforeend", headerHtml(current));
-      // Move the real native follow/notification-level button into our
-      // header's action slot (reparenting keeps its Ember-bound click
-      // behavior fully intact — same technique used for the sidebar
-      // layout grid in rp-init.js).
-      const followBtn = document.querySelector(".notifications-tracking-trigger");
+      // Move the real native "New Topic" button and the follow/
+      // notification-level button into our header's action slot
+      // (reparenting keeps their Ember-bound click behavior fully
+      // intact — same technique used for the sidebar layout grid in
+      // rp-init.js). New Topic first (primary action), Follow second.
       const actionsSlot = heading.querySelector(".rp-category-header-actions");
-      if (followBtn && actionsSlot) {
+      const newTopicBtn =
+        document.querySelector(".topic-create-button__combo") ||
+        document.getElementById("create-topic");
+      const followBtn = document.querySelector(".notifications-tracking-trigger");
+      if (actionsSlot && newTopicBtn) {
+        actionsSlot.appendChild(newTopicBtn);
+      }
+      if (actionsSlot && followBtn) {
         actionsSlot.appendChild(followBtn);
       }
     }

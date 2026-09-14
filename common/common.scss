@@ -1276,19 +1276,27 @@ table.category-list,
     }
 
     .topic-list-data {
-      padding: 12px;
+      padding: 14px 12px;
       vertical-align: middle;
     }
   }
 
+  // Match the category cards' visual weight: bold white title, muted
+  // single-line excerpt, colored tag pills — same hierarchy used on
+  // the Forums index (.rp-cat-name / .rp-cat-desc).
   .main-link {
     .title {
       color: var(--rp-text);
-      font-weight: 600;
+      font-weight: 700;
+      font-size: 1.02em;
       text-decoration: none;
     }
 
     .topic-status svg {
+      color: var(--rp-text-muted);
+    }
+
+    .topic-status.--pinned svg {
       color: var(--rp-blue-hover);
     }
 
@@ -1296,10 +1304,34 @@ table.category-list,
       color: var(--rp-text-muted);
       font-size: 0.82em;
       margin-top: 4px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 100%;
     }
   }
 
+  .discourse-tags {
+    display: inline-flex;
+    gap: 4px;
+    margin-top: 4px;
+  }
+
+  .discourse-tag {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--rp-blue) 18%, transparent);
+    color: var(--rp-blue-hover);
+    font-size: 0.72em;
+    font-weight: 600;
+    text-decoration: none;
+    text-transform: none;
+  }
+
   .posters img.avatar {
+    width: 36px;
+    height: 36px;
     border-radius: var(--rp-radius-sm);
   }
 
@@ -1358,6 +1390,15 @@ table.category-list,
     margin: 0;
     font-size: 0.9em;
   }
+}
+
+// Holds the real native "New Topic" and Follow buttons, reparented
+// here by rp-category-header.js.
+.rp-category-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
 }
 
 // Also confirmed absent natively: the "Subforums" panel for a category
