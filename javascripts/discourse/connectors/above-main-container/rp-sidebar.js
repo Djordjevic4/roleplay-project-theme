@@ -20,8 +20,7 @@
 import { htmlSafe } from "@ember/template";
 import { getOwner } from "@ember/application";
 
-function isCategoriesIndexRoute(component) {
-  const router = getOwner(component)?.lookup("service:router");
+function isCategoriesIndexRoute(router) {
   const name = router?.currentRouteName || "";
   return name.startsWith("discovery.categories");
 }
@@ -272,17 +271,27 @@ function fetchRecentActivity(component) {
 }
 
 export default {
-  // Sidebar is only shown on the categories index ("Forums" page) —
-  // not on individual category/topic-list pages.
-  shouldRender(args, component) {
-    return (
-      settings.show_sidebar_widgets &&
-      !document.querySelector(".rp-sidebar") &&
-      isCategoriesIndexRoute(component)
-    );
+  // Only the on/off setting is checked here — this connector's outlet
+  // (above-main-container) turned out to be defined at a shared
+  // ancestor "discovery" route template, so it stays mounted across
+  // client-side transitions between the categories index and an
+  // individual category's topic list (shouldRender only re-runs on a
+  // full page load, not every such transition). Route-based show/hide
+  // is instead handled reactively below via the router service.
+  shouldRender() {
+    return settings.show_sidebar_widgets && !document.querySelector(".rp-sidebar");
   },
 
   setupComponent(args, component) {
+    const router = getOwner(component)?.lookup("service:router");
+    const updateVisibility = () => {
+      component.set("rpShouldShow", isCategoriesIndexRoute(router));
+    };
+    updateVisibility();
+    router?.on("routeDidChange", updateVisibility);
+    component._rpRouter = router;
+    component._rpUpdateVisibility = updateVisibility;
+
     const maxPlayers = settings.server_max_players;
     const playerCount = settings.server_status_fallback_players;
     const initialPlayerPercent = markerPercent(playerCount, 0, maxPlayers);
@@ -343,6 +352,9 @@ export default {
     ((component && component._rpTimers) || []).forEach(clearInterval);
     if (component) {
       component._rpTimers = [];
+      if (component._rpRouter && component._rpUpdateVisibility) {
+        component._rpRouter.off("routeDidChange", component._rpUpdateVisibility);
+      }
     }
   },
 };
