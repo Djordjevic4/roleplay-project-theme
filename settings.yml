@@ -50,6 +50,9 @@ thread_builder_url:
   default: "/latest"
   type: string
 
+show_custom_brand:
+  default: true
+  type: bool
 show_custom_header_nav:
   default: true
   type: bool

@@ -60,6 +60,14 @@ a {
     max-width: var(--rp-content-max);
   }
 
+  // Confirmed real structure: .contents wraps home-logo-wrapper-outlet,
+  // before-header-panel-outlet, .panel, and after-header-panel-outlet
+  // as a horizontal row.
+  .contents {
+    display: flex;
+    align-items: center;
+  }
+
   .panel {
     align-items: center;
     height: var(--rp-header-height);
@@ -67,7 +75,7 @@ a {
 }
 
 // Hide native logo/title once our custom brand mark has mounted
-// (see connectors/home-logo-contents-before/rp-brand.js). If for any
+// (see connectors/home-logo-wrapper/rp-brand.js). If for any
 // reason our connector fails to render on a future Discourse version,
 // this class is never added and the native logo remains visible.
 body.rp-brand-active {
@@ -130,9 +138,19 @@ body.rp-brand-active {
   }
 }
 
-// Custom center nav, visually centered independent of DOM position
-// within the header (works regardless of exactly where the
-// `header-icons` outlet mounts inside .d-header).
+// Custom center nav. Confirmed via a live install's rendered DOM that
+// .d-header .contents lays out as a flex row:
+//   home-logo-wrapper-outlet | before-header-panel-outlet | .panel
+// so rp-nav.hbs (mounted at before-header-panel) already sits between
+// the logo and the icon buttons — this outlet wrapper just needs to
+// grow and center its content, no absolute-positioning hack needed.
+.before-header-panel-outlet {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  justify-content: center;
+}
+
 .rp-header-nav {
   display: flex;
   align-items: center;
@@ -140,10 +158,6 @@ body.rp-brand-active {
   list-style: none;
   margin: 0;
   padding: 0;
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  transform: translate(-50%, -50%);
 
   > li {
     position: relative;

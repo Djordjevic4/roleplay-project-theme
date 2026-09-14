@@ -16,16 +16,24 @@ roleplay-project-theme/
     │   ├── rp-init.js                 # forces the 2-column layout grid + fallback parent-header marking
     │   └── rp-categories.js           # replaces the native category list with custom cards (own JSON fetch)
     └── connectors/
-        ├── home-logo-contents-before/
+        ├── home-logo-wrapper/
         │   ├── rp-brand.js
-        │   └── rp-brand.hbs           # custom logo mark + "Roleplay"/"Project"
-        ├── header-icons/
+        │   └── rp-brand.hbs           # custom logo mark + "Roleplay"/"Project" (redundant if you
+        │                              # already have a custom logo image — see below)
+        ├── before-header-panel/
         │   ├── rp-nav.js
         │   └── rp-nav.hbs             # UCP / Forums / Staff / Events / Shop / Thread Builder
         └── above-main-container/
             ├── rp-topbar.js / .hbs    # Home link + search trigger bar
-            └── rp-sidebar.js / .hbs   # Server Status / Time / Weather widgets
+            └── rp-sidebar.js / .hbs   # Server Status / Time / Weather / Recent Activity widgets
 ```
+
+The connector folder names (`home-logo-wrapper`, `before-header-panel`,
+`above-main-container`) are real Discourse plugin outlet names, confirmed
+by inspecting a live install's rendered header HTML — Discourse renders
+outlet `X` as a wrapping `<div class="X-outlet">`, which is how these were
+verified. Two earlier guesses (`header-icons`, `home-logo-contents-before`/
+`-after`) turned out not to exist on that install and were replaced.
 
 ## Installation
 
