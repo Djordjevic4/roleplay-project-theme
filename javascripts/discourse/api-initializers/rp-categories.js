@@ -187,7 +187,16 @@ export default apiInitializer((api) => {
     const myToken = ++renderToken;
 
     let page = anchor.querySelector(":scope > .rp-forums-page");
-    const nativeChildren = Array.from(anchor.children).filter((el) => el !== page);
+    // Never touch our own other connectors — .rp-topbar and .rp-sidebar
+    // turned out to render as children of #main-outlet on this install
+    // (not as separate siblings, as originally assumed), so a blanket
+    // "hide everything native" pass was hiding them too.
+    const nativeChildren = Array.from(anchor.children).filter(
+      (el) =>
+        el !== page &&
+        !el.classList.contains("rp-topbar") &&
+        !el.classList.contains("rp-sidebar")
+    );
     nativeChildren.forEach((el) => (el.style.display = "none"));
 
     if (!page) {
