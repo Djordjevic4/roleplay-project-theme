@@ -366,68 +366,48 @@ body.rp-brand-active {
 // -----------------------------------------------------------------
 // Sidebar layout (Server Status / Time / Weather column)
 // -----------------------------------------------------------------
-// #rp-layout-row is created by javascripts/discourse/api-initializers/
-// rp-init.js, which physically moves #main-outlet and .rp-sidebar into
-// it. We anchor the grid on this wrapper (which we fully control)
-// rather than guessing which native Discourse element already wraps
-// both of them — that assumption is what broke on a live install.
-// Confirmed via computed-style inspection: #main-outlet-wrapper (the
-// native ancestor, class "wrap") is a CSS *grid* container, not flex —
-// a real structural surprise this theme's earlier flex-only styling
-// didn't account for. As a grid item, #rp-layout-row was shrinking to
-// its content's natural width (~405px, driven by the topic-list
-// table's intrinsic sizing) instead of stretching across its grid
-// track — explicit width:100% + justify-self:stretch forces it to
-// fill the track regardless of its own content's natural size.
-#rp-layout-row {
-  display: flex;
-  align-items: flex-start;
+// Computed-style inspection on a live install found #main-outlet's
+// real ancestor, #main-outlet-wrapper (class "wrap"), is a CSS *grid*
+// container, not flex. An earlier version of this file wrapped
+// #main-outlet in an extra flex <div> to build the 2-column layout,
+// but that div didn't carry whatever grid-row/column placement
+// Discourse's native CSS gives #main-outlet specifically, which broke
+// the native grid's row placement and made the sidebar overlap the
+// main content instead of sitting beside it.
+//
+// This version never introduces a wrapping element. javascripts/
+// discourse/api-initializers/rp-init.js instead moves .rp-sidebar to
+// be a direct sibling of #main-outlet inside the *existing*
+// #main-outlet-wrapper, and toggles the .rp-has-sidebar class on that
+// wrapper — only while that class is present do we override its grid
+// template into 2 explicit columns. Without it, #main-outlet-wrapper
+// is left completely alone, keeping whatever native single-column
+// grid placement already renders #main-outlet correctly full-width.
+#main-outlet-wrapper.rp-has-sidebar {
+  display: grid;
+  grid-template-columns: 1fr var(--rp-sidebar-width);
+  align-items: start;
   gap: var(--rp-gap);
-  max-width: var(--rp-content-max);
-  width: 100%;
-  justify-self: stretch;
-  margin: 0 auto;
-  box-sizing: border-box;
 }
 
-// Discourse's native CSS applies its own width/max-width rules to
-// #main-outlet (sized for the normal single-column layout) — those
-// still apply here since we never override that specific property
-// elsewhere, capping this at a narrow width no matter what `flex`
-// says. #rp-layout-row > #main-outlet has higher specificity (two ID
-// selectors) than a plain #main-outlet rule, so explicitly clearing
-// width/max-width here wins.
-#rp-layout-row > #main-outlet {
-  flex: 1 1 0;
-  min-width: 0;
+#main-outlet-wrapper.rp-has-sidebar > #main-outlet {
+  grid-column: 1;
+  grid-row: 1;
   max-width: none !important;
   width: auto !important;
-  order: 1;
+  min-width: 0;
+}
+
+#main-outlet-wrapper.rp-has-sidebar > .rp-sidebar {
+  grid-column: 2;
+  grid-row: 1;
 }
 
 .rp-sidebar {
-  flex: 0 0 var(--rp-sidebar-width);
-  width: var(--rp-sidebar-width);
-  order: 2;
   display: flex;
   flex-direction: column;
   gap: var(--rp-gap);
   padding-top: 20px;
-}
-
-// Belt-and-suspenders fallback for the (unlikely) case the JS layout
-// pass hasn't run yet on first paint.
-#main-outlet-wrapper:has(> .rp-sidebar):not(:has(#rp-layout-row)) {
-  display: flex;
-  align-items: flex-start;
-  gap: var(--rp-gap);
-
-  > #main-outlet {
-    flex: 1 1 0;
-    min-width: 0;
-    max-width: none !important;
-    width: auto !important;
-  }
 }
 
 .rp-widget {
@@ -1422,14 +1402,12 @@ table.category-list,
     display: none;
   }
 
-  #rp-layout-row,
-  #main-outlet-wrapper:has(> .rp-sidebar) {
+  #main-outlet-wrapper.rp-has-sidebar {
     display: block;
   }
 
   .rp-sidebar {
     width: 100%;
-    flex: none;
     padding-top: 12px;
   }
 

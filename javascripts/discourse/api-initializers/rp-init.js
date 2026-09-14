@@ -54,41 +54,42 @@ function updateSidebarVisibility(api) {
   });
 }
 
-// Forces the real 2-column layout (main content + right sidebar) by
-// physically moving #main-outlet and the sidebar's own root element
-// into a wrapper we create and fully control. This is deliberately NOT
-// based on guessing which Discourse-internal element wraps both of
-// them (that assumption proved wrong on at least one live install) —
-// #main-outlet's id is one of the oldest, most stable anchors in
-// Discourse, so anchoring off it directly is far more reliable.
+// Forces the real 2-column layout (main content + right sidebar).
+//
+// Computed-style inspection on a live install revealed #main-outlet's
+// real ancestor, #main-outlet-wrapper (class "wrap"), is a CSS *grid*
+// container — not flex, as earlier versions of this file assumed.
+// Wrapping #main-outlet in an extra flex <div> disrupted the native
+// grid's row placement (the wrapper div didn't carry whatever
+// grid-row/column assignment Discourse's own CSS gives #main-outlet),
+// which is what caused the sidebar to overlap the main content instead
+// of sitting beside it.
+//
+// This version does not introduce any wrapping element at all: it
+// only moves .rp-sidebar to be a direct sibling of #main-outlet inside
+// the *existing* #main-outlet-wrapper grid, and toggles a class on
+// that wrapper to explicitly define a 2-column grid template only
+// while the sidebar should be visible — otherwise the wrapper is left
+// completely alone, so #main-outlet keeps whatever native single-
+// column grid placement already works correctly.
 function ensureLayoutGrid() {
   const mainOutlet = document.getElementById("main-outlet");
-  if (!mainOutlet) {
+  const wrapper = document.getElementById("main-outlet-wrapper");
+  if (!mainOutlet || !wrapper) {
     return;
   }
+
   const sidebar = document.querySelector(".rp-sidebar");
-  let row = document.getElementById("rp-layout-row");
+  const sidebarVisible = !!sidebar && getComputedStyle(sidebar).display !== "none";
 
-  if (!sidebar) {
-    // Sidebar widgets are disabled or not yet mounted: unwrap if we
-    // previously wrapped, so #main-outlet returns to its normal flow.
-    if (row) {
-      row.parentNode.insertBefore(mainOutlet, row);
-      row.remove();
-    }
+  if (!sidebarVisible) {
+    wrapper.classList.remove("rp-has-sidebar");
     return;
   }
 
-  if (!row) {
-    row = document.createElement("div");
-    row.id = "rp-layout-row";
-    mainOutlet.parentNode.insertBefore(row, mainOutlet);
-  }
-  if (mainOutlet.parentElement !== row) {
-    row.appendChild(mainOutlet);
-  }
-  if (sidebar.parentElement !== row) {
-    row.appendChild(sidebar);
+  wrapper.classList.add("rp-has-sidebar");
+  if (sidebar.parentElement !== wrapper) {
+    wrapper.appendChild(sidebar);
   }
 }
 
