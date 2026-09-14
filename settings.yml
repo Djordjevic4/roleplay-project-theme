@@ -23,10 +23,10 @@ brand_logo:
 
 # --- Colors -----------------------------------------------------
 primary_color:
-  default: "#1685FF"
+  default: "#1f6feb"
   type: string
 primary_color_hover:
-  default: "#2D9CFF"
+  default: "#3b82f6"
   type: string
 
 # --- Header navigation links (URLs only — labels/icons are fixed

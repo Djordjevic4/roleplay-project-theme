@@ -8,9 +8,9 @@
 
 :root {
   --rp-bg: #0b0e13;
-  --rp-panel: #171b21;
-  --rp-panel-header: #20252d;
-  --rp-border: #2d333c;
+  --rp-panel: #161b22;
+  --rp-panel-header: #1c222b;
+  --rp-border: #21262d;
   --rp-blue: #{$primary_color};
   --rp-blue-hover: #{$primary_color_hover};
   --rp-text: #f4f6f8;
@@ -18,7 +18,7 @@
   --rp-green: #16c46a;
   --rp-red: #ff4b4b;
   --rp-radius-sm: 4px;
-  --rp-radius-md: 6px;
+  --rp-radius-md: 8px;
   --rp-header-height: 80px;
   --rp-topbar-height: 48px;
   --rp-content-max: 1250px;
@@ -322,16 +322,21 @@ body.rp-brand-active {
 // -----------------------------------------------------------------
 // Sidebar layout (Server Status / Time / Weather column)
 // -----------------------------------------------------------------
-// Falls back gracefully to a single stacked column when :has() isn't
-// supported, or when the sidebar connector doesn't render.
-#main-outlet-wrapper:has(> .rp-sidebar) {
+// #rp-layout-row is created by javascripts/discourse/api-initializers/
+// rp-init.js, which physically moves #main-outlet and .rp-sidebar into
+// it. We anchor the grid on this wrapper (which we fully control)
+// rather than guessing which native Discourse element already wraps
+// both of them — that assumption is what broke on a live install.
+#rp-layout-row {
   display: flex;
   align-items: flex-start;
   gap: var(--rp-gap);
+  max-width: var(--rp-content-max);
+  margin: 0 auto;
 }
 
-#main-outlet-wrapper:has(> .rp-sidebar) > #main-outlet {
-  flex: 1 1 auto;
+#rp-layout-row > #main-outlet {
+  flex: 1 1 0;
   min-width: 0;
   order: 1;
 }
@@ -344,6 +349,19 @@ body.rp-brand-active {
   flex-direction: column;
   gap: var(--rp-gap);
   padding-top: 20px;
+}
+
+// Belt-and-suspenders fallback for the (unlikely) case the JS layout
+// pass hasn't run yet on first paint.
+#main-outlet-wrapper:has(> .rp-sidebar):not(:has(#rp-layout-row)) {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--rp-gap);
+
+  > #main-outlet {
+    flex: 1 1 0;
+    min-width: 0;
+  }
 }
 
 .rp-widget {
@@ -671,8 +689,216 @@ body.rp-brand-active {
   }
 }
 
+// Best-effort safety net so the title and "+ New Topic" button sit on
+// one row (title left, button right) regardless of exactly which
+// wrapper class this Discourse version uses for that row.
+#list-area > div:first-child,
+.categories-and-latest > .row,
+.category-list-wrapper > .row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+// Hide the native "welcome back" hero banner and the Categories/Latest
+// tab switcher — the reference design has neither.
+.discovery-hero {
+  display: none !important;
+}
+
+.navigation-container {
+  display: none !important;
+}
+
+// -----------------------------------------------------------------
+// Custom category cards (javascripts/discourse/api-initializers/
+// rp-categories.js). These replace the native category list entirely
+// on the categories index, fetched from Discourse's public JSON API
+// so they render identically regardless of the site's configured
+// "desktop category page style".
+// -----------------------------------------------------------------
+.rp-cat-loading {
+  padding: 20px;
+  color: var(--rp-text-muted);
+  font-size: 0.9em;
+}
+
+.rp-cat-sections {
+  display: flex;
+  flex-direction: column;
+  gap: var(--rp-gap);
+  margin-bottom: var(--rp-gap);
+}
+
+.rp-cat-section {
+  background: var(--rp-panel);
+  border: 1px solid var(--rp-border);
+  border-radius: var(--rp-radius-md);
+  overflow: hidden;
+}
+
+.rp-cat-section-header {
+  height: 46px;
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+  background: var(--rp-panel-header);
+  border-bottom: 1px solid var(--rp-border);
+  font-weight: 700;
+  font-size: 0.95em;
+  color: var(--rp-text);
+}
+
+.rp-cat-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-height: 80px;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--rp-border);
+  transition: background-color 0.15s ease;
+
+  &:last-child {
+    border-bottom: none;
+  }
+
+  &:hover {
+    background: #1b212a;
+  }
+}
+
+.rp-cat-main {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1 1 auto;
+  min-width: 0;
+  text-decoration: none;
+}
+
+.rp-cat-badge {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  font-size: 0.95em;
+  font-weight: 700;
+}
+
+.rp-cat-text {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.rp-cat-name {
+  font-weight: 700;
+  font-size: 0.98em;
+  color: var(--rp-text);
+}
+
+.rp-cat-desc {
+  color: var(--rp-text-muted);
+  font-size: 0.82em;
+  margin-top: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.rp-cat-count {
+  flex: 0 0 90px;
+  text-align: center;
+  color: var(--rp-text-muted);
+  font-size: 0.78em;
+}
+
+.rp-cat-count-number {
+  display: block;
+  font-size: 1.3em;
+  font-weight: 700;
+  color: var(--rp-text);
+}
+
+.rp-cat-latest {
+  flex: 0 0 260px;
+  max-width: 260px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  text-decoration: none;
+
+  &.rp-cat-latest-empty {
+    color: var(--rp-text-muted);
+    font-size: 0.82em;
+  }
+}
+
+.rp-cat-avatar {
+  border-radius: var(--rp-radius-sm);
+  flex-shrink: 0;
+}
+
+.rp-cat-latest-info {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.rp-cat-latest-title {
+  font-size: 0.85em;
+  font-weight: 600;
+  color: var(--rp-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.rp-cat-latest-meta {
+  font-size: 0.78em;
+  color: var(--rp-text-muted);
+  margin-top: 2px;
+}
+
+.rp-cat-latest-user {
+  color: var(--rp-blue-hover);
+}
+
+@media (max-width: 900px) {
+  .rp-cat-desc {
+    display: none;
+  }
+
+  .rp-cat-latest {
+    flex: 0 0 180px;
+    max-width: 180px;
+  }
+}
+
+@media (max-width: 767px) {
+  .rp-cat-row {
+    flex-wrap: wrap;
+    height: auto;
+  }
+
+  .rp-cat-count,
+  .rp-cat-latest {
+    flex: 1 1 100%;
+    max-width: none;
+    text-align: left;
+    margin-top: 8px;
+  }
+}
+
 // -----------------------------------------------------------------
 // Category list (index) — restyled into dark panels/rows
+// (fallback path only: used if rp-categories.js's fetch fails and
+// the native list is shown again — see that file's catch branch)
 // -----------------------------------------------------------------
 table.category-list,
 .category-list {
@@ -935,6 +1161,7 @@ table.category-list,
     display: none;
   }
 
+  #rp-layout-row,
   #main-outlet-wrapper:has(> .rp-sidebar) {
     display: block;
   }

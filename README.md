@@ -13,7 +13,8 @@ roleplay-project-theme/
 │   └── common.scss
 └── javascripts/discourse/
     ├── api-initializers/
-    │   └── rp-init.js                 # marks parent categories as section headers
+    │   ├── rp-init.js                 # forces the 2-column layout grid + fallback parent-header marking
+    │   └── rp-categories.js           # replaces the native category list with custom cards (own JSON fetch)
     └── connectors/
         ├── home-logo-contents-before/
         │   ├── rp-brand.js
@@ -37,27 +38,30 @@ roleplay-project-theme/
 4. Open **Admin → Customize → Themes → Roleplay Project → Settings** and
    configure the values in the next section.
 
-### One required core setting
+### No core "category page style" setting required
 
-For the category list to render as the row-based table this theme restyles
-(icon + name + description on the left, topic count in the middle, latest
-topic on the right), set the site setting:
-
-- **Admin → Settings → desktop category page style** → choose the plain
-  **"categories"** table-style option (not "boxes").
+Earlier versions of this theme restyled whatever Discourse's native category
+list rendered, which meant the result depended on the site's **desktop
+category page style** setting matching what the CSS expected. That setting
+is no longer relevant: `rp-categories.js` fetches category + latest-topic
+data directly from Discourse's own `/categories.json` and `/c/{id}.json`
+public JSON endpoints and renders the theme's own cards, so the result looks
+identical no matter which native list style your site has configured. If
+that fetch ever fails for any reason, the native list is shown again
+untouched rather than leaving a blank page.
 
 ### Recommended category setup (to match the screenshots exactly)
 
 - Create parent categories **Announcements** and **Community** (no need to
-  put topics directly in them) — the theme automatically renders any
-  category that has subcategories as a bare section-header bar, using real
-  category data (see `rp-init.js`).
+  put topics directly in them) — any category that has subcategories
+  automatically renders as a bare section-header bar with its children as
+  full rows beneath it, using real category data.
 - Create their subcategories: **Server Announcements**, **Patch Notes**,
   **Scheduled Maintenance** under Announcements; **Introductions**,
   **General Discussion**, **Suggestions** under Community.
-- Set **Category Style** (Admin → Settings → category style) to **"icon"**
-  and pick a FontAwesome icon + color per category in each category's
-  settings — this is what renders the round icon badge next to the name.
+- Category badges use each category's own configured **color** (Admin →
+  Categories → [category] → color) as a circular badge with the category's
+  first letter — no icon-style site setting required.
 
 ## Theme settings reference
 
@@ -115,42 +119,47 @@ so the layout previews correctly — it is never presented as live data.
 
 ## Limitations / things to verify after install
 
-Since this theme was built in a filesystem-only environment with no live
-Discourse instance to render against, a few structural CSS selectors are
-based on well-established (but not 100%-version-guaranteed) Discourse
-markup:
+This theme was built and syntax-checked in a filesystem-only environment
+with no live Discourse instance to render against, so a few things are
+worth verifying on your actual install:
 
-- The category-list table restyling targets `.category-list`, `tr`, and
-  column position (`:nth-child`) as a resilient fallback alongside known
-  class names (`.category-title-link`, `.category-description`,
-  `.badge-category`, `.latest-topic-title`, `.last-posters`). If your
-  Discourse version's markup differs, spacing/columns should still mostly
-  line up (rows are restyled by structural position too), but open
-  devtools and compare against the screenshot after install.
-- The "parent category → section header" behavior depends on category rows
-  carrying a `data-category-id` attribute (long-standing in Discourse) and
-  the `service:site` category list. If a future version changes this, the
-  parent category simply renders as a normal row instead of a bare header
-  — a graceful, non-breaking fallback.
+- The **2-column layout** is enforced by `rp-init.js`, which physically
+  moves `#main-outlet` and `.rp-sidebar` into a wrapper (`#rp-layout-row`)
+  it creates and controls itself — this was changed from an earlier
+  approach that assumed a specific native Discourse wrapper element, which
+  turned out to be wrong on a live install and produced a broken layout.
+  Anchoring on `#main-outlet`'s id (one of the most stable ids in Discourse)
+  instead of a guessed wrapper class is deliberately more conservative.
+- The **category cards** on the categories index are rendered entirely by
+  `rp-categories.js` from `/categories.json` + `/c/{id}.json`, independent
+  of the site's native list style/markup. This trades a small amount of
+  extra network calls (one per category, to fetch its latest topic) for
+  being immune to Discourse markup/version differences. If your forum has
+  many categories (dozens+), consider this before relying on it as-is.
+- The per-category topic list page (e.g. "Server Announcements") still uses
+  the native Discourse topic list, restyled via CSS class names
+  (`.topic-list`, `.category-list` for the "Subforums" box) — those class
+  names are the same educated-guess-but-unverified kind as before. If they
+  don't match on your version, that specific page degrades to a mostly
+  unstyled dark list rather than breaking.
 - Native breadcrumbs on category pages are restyled in place rather than
   moved into the custom Home/Search bar, so category pages show both the
   custom bar and the native breadcrumb trail immediately below it.
+- `.discovery-hero` and `.navigation-container` (the welcome banner and the
+  Categories/Latest tab switcher) are hidden by class name as given — if a
+  future Discourse version renames either, they'd simply reappear rather
+  than something breaking.
 - The header's center nav is positioned with `position: absolute; left:
   50%` inside `.d-header`, so it visually centers regardless of exactly
   where the `header-icons` outlet mounts in the DOM.
-- The right sidebar uses the CSS `:has()` selector to lay out
-  `#main-outlet-wrapper` as a flex row only when the sidebar is present.
-  This is supported in all current evergreen browsers; on the rare browser
-  without it, the sidebar simply stacks below the content instead of
-  beside it (progressive enhancement, not broken).
 - "UCP", "Staff", "Events", "Shop", "Thread Builder" are custom links you
   provide — Discourse has no native equivalent for these, so they're
   plain configurable URLs, not deep Discourse features.
 - I could not run this inside an actual Discourse app in this environment
-  (no Ruby/Discourse install available), so I validated `about.json` and
-  `settings.yml` for syntax correctness and hand-reviewed the JS/HBS/SCSS
-  against Discourse's documented theme APIs, but final visual QA on a real
-  install is still recommended.
+  (no Ruby/Discourse install available), so please hard-refresh and check
+  the browser console after every update — that's how we caught and fixed
+  the last two rounds of bugs (a `this`-binding error and two deprecated
+  template APIs) quickly.
 
 ## What was implemented vs. the screenshot
 
@@ -161,12 +170,16 @@ markup:
   real search.
 - ✅ Two-column layout (~78/22 split, 18px gap), responsive stacking.
 - ✅ "Forums" title + blue "+ New Topic" button (native button, restyled).
-- ✅ Category sections as dark panels with header bars for parent
-  categories, rows with icon/name/description, topic count, and latest
-  topic (avatar, title, user, time) — all real Discourse data.
+- ✅ Category sections as dark panels (`#161b22` bg, `#21262d` border,
+  `8px` radius) with header bars for parent categories, rows with
+  icon/name/description, topic count, and latest topic (avatar, title,
+  user, time) — rendered from real Discourse data via the public JSON API,
+  independent of the site's native list style.
 - ✅ Category detail page (subforums panel + topic list) restyled to match.
 - ✅ Server Status / Server Time / Server Weather sidebar widgets with a
   documented, swappable API layer and safe fallbacks.
+- ✅ Native "welcome back" hero banner and Categories/Latest tab switcher
+  hidden to match the reference (which has neither).
 - ⚠️ Nav icons are semantic FontAwesome choices (id-card, comments,
   user-shield, calendar-days, cart-shopping, layer-group) rather than
   pixel-identical copies of the screenshot's icons, which were too small/
