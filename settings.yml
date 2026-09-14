@@ -34,6 +34,9 @@ primary_color_hover:
 forums_url:
   default: "/categories"
   type: string
+loose_categories_label:
+  default: "Categories"
+  type: string
 ucp_url:
   default: "/my/preferences"
   type: string

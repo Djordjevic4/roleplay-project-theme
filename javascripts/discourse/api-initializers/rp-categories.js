@@ -141,9 +141,12 @@ function sectionHtml(parent, children) {
 }
 
 function looseSectionHtml(cats) {
-  return `<div class="rp-cat-section"><div class="rp-cat-section-body">${cats
-    .map(rowHtml)
-    .join("")}</div></div>`;
+  const rows = cats.map(rowHtml).join("");
+  const label = escapeHtml(settings.loose_categories_label);
+  return `<div class="rp-cat-section">
+      <div class="rp-cat-section-header">${label}</div>
+      <div class="rp-cat-section-body">${rows}</div>
+    </div>`;
 }
 
 function buildHtml(categories) {
