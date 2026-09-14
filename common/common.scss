@@ -1372,6 +1372,146 @@ table.category-list,
 }
 
 // -----------------------------------------------------------------
+// Composer (topic/reply creation panel)
+// -----------------------------------------------------------------
+// Pure CSS restyle of Discourse's native composer using its long-
+// stable class names (#reply-control, .d-editor, .submit-panel, etc.)
+// — no DOM changes, so a selector that doesn't match current markup
+// simply stays unstyled rather than breaking anything. The global
+// color-scheme variable overrides near the top of this file already
+// cover a lot of this (Discourse's own composer CSS leans heavily on
+// --primary/--secondary/--tertiary), so this section mainly refines
+// specific accents (borders, buttons, toolbar highlighting) on top of
+// that base.
+#reply-control {
+  background: var(--rp-panel);
+  border-top: 1px solid var(--rp-border);
+}
+
+.composer-fields {
+  background: var(--rp-panel);
+}
+
+.composer-controls .btn,
+.composer-controls button {
+  color: var(--rp-text-muted);
+
+  &:hover {
+    color: var(--rp-text);
+  }
+}
+
+#reply-title,
+input.title-input {
+  background: var(--rp-bg);
+  border: 1px solid var(--rp-border);
+  border-radius: var(--rp-radius-sm);
+  color: var(--rp-text);
+  font-weight: 600;
+
+  &:focus {
+    border-color: var(--rp-blue);
+    outline: none;
+  }
+
+  &::placeholder {
+    color: var(--rp-text-muted);
+  }
+}
+
+.category-input .select-kit-header,
+.mixed-controls .select-kit-header,
+.category-chooser .select-kit-header,
+.tag-chooser .select-kit-header {
+  background: var(--rp-bg);
+  border: 1px solid var(--rp-border);
+  border-radius: var(--rp-radius-sm);
+  color: var(--rp-text);
+}
+
+.select-kit.is-expanded .select-kit-header {
+  border-color: var(--rp-blue);
+}
+
+.select-kit-body {
+  background: var(--rp-panel);
+  border: 1px solid var(--rp-border);
+  border-radius: var(--rp-radius-sm);
+
+  .select-kit-row {
+    color: var(--rp-text);
+
+    &:hover,
+    &.is-highlighted {
+      background: var(--rp-panel-header);
+    }
+  }
+}
+
+.d-editor-button-bar {
+  background: var(--rp-panel-header);
+  border-bottom: 1px solid var(--rp-border);
+
+  .btn {
+    color: var(--rp-text-muted);
+    background: transparent;
+    border: none;
+
+    &:hover {
+      color: var(--rp-text);
+      background: color-mix(in srgb, var(--rp-blue) 14%, transparent);
+    }
+  }
+}
+
+.d-editor-input {
+  background: var(--rp-bg);
+  color: var(--rp-text);
+  border: none;
+
+  &::placeholder {
+    color: var(--rp-text-muted);
+  }
+}
+
+.d-editor-preview-wrapper,
+.d-editor-preview {
+  background: var(--rp-panel);
+  color: var(--rp-text);
+  border-left: 1px solid var(--rp-border);
+}
+
+.submit-panel {
+  background: var(--rp-panel-header);
+  border-top: 1px solid var(--rp-border);
+}
+
+.save-or-cancel {
+  .btn.create,
+  .btn-primary {
+    background: var(--rp-blue);
+    border: none;
+    color: #fff;
+    font-weight: 700;
+    border-radius: var(--rp-radius-sm);
+
+    &:hover {
+      background: var(--rp-blue-hover);
+    }
+  }
+
+  .cancel,
+  a.cancel-link {
+    color: var(--rp-text-muted);
+    text-decoration: none;
+
+    &:hover {
+      color: var(--rp-text);
+    }
+  }
+}
+
+// -----------------------------------------------------------------
 // Responsive
 // -----------------------------------------------------------------
 @media (max-width: 1300px) {
