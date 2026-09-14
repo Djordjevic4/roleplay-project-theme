@@ -371,12 +371,23 @@ body.rp-brand-active {
 // it. We anchor the grid on this wrapper (which we fully control)
 // rather than guessing which native Discourse element already wraps
 // both of them — that assumption is what broke on a live install.
+// Confirmed via computed-style inspection: #main-outlet-wrapper (the
+// native ancestor, class "wrap") is a CSS *grid* container, not flex —
+// a real structural surprise this theme's earlier flex-only styling
+// didn't account for. As a grid item, #rp-layout-row was shrinking to
+// its content's natural width (~405px, driven by the topic-list
+// table's intrinsic sizing) instead of stretching across its grid
+// track — explicit width:100% + justify-self:stretch forces it to
+// fill the track regardless of its own content's natural size.
 #rp-layout-row {
   display: flex;
   align-items: flex-start;
   gap: var(--rp-gap);
   max-width: var(--rp-content-max);
+  width: 100%;
+  justify-self: stretch;
   margin: 0 auto;
+  box-sizing: border-box;
 }
 
 // Discourse's native CSS applies its own width/max-width rules to
