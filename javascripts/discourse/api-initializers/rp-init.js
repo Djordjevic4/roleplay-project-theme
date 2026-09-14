@@ -77,4 +77,20 @@ export default apiInitializer((api) => {
       markParentRows(api);
     }, 80);
   });
+
+  // Also react directly to DOM changes, not just page-change events.
+  // The sidebar's own visibility is driven independently (by a router
+  // event inside rp-sidebar.js) and isn't guaranteed to update before
+  // or after this file's page-change timer — if it disappears just
+  // after ensureLayoutGrid() already saw it present, #main-outlet is
+  // left stuck alone inside the flex wrapper (narrow column, huge
+  // empty space beside it) until something else triggers a re-check.
+  // ensureLayoutGrid() is cheap and a no-op once state already matches,
+  // so reacting to any mutation here is safe.
+  let debounceTimer = null;
+  const observer = new MutationObserver(() => {
+    clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(ensureLayoutGrid, 30);
+  });
+  observer.observe(document.body, { childList: true, subtree: true });
 });
