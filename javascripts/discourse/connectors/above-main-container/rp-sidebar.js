@@ -5,6 +5,12 @@
 // blank, the widget falls back to static/mock values so the layout
 // always renders something sensible. See README.md for the exact
 // JSON shape each endpoint is expected to return.
+//
+// NOTE: these helpers are plain module-level functions (not object
+// methods called via `this`). Discourse's connector-class wiring does
+// not guarantee `this` inside setupComponent/teardownComponent refers
+// to this exported object, so all state is threaded through explicit
+// `component` arguments / properties instead.
 // ---------------------------------------------------------------
 
 const FALLBACK_HOURLY = [
@@ -55,6 +61,133 @@ function mapHourly(hourly) {
   }));
 }
 
+function addTimer(component, id) {
+  component._rpTimers = component._rpTimers || [];
+  component._rpTimers.push(id);
+}
+
+// --- Server Status -------------------------------------------------
+function fetchStatus(component) {
+  const url = settings.server_status_api_url;
+  if (!url) {
+    return;
+  }
+  const load = async () => {
+    try {
+      const res = await fetch(url);
+      const data = await res.json();
+      if (component.isDestroying || component.isDestroyed) {
+        return;
+      }
+      const maxPlayers = Number(data.maxPlayers ?? settings.server_max_players);
+      const playerCount = Number(data.players ?? 0);
+      component.setProperties({
+        statusOnline: !!data.online,
+        playerCount,
+        maxPlayers,
+        playerPercent: markerPercent(playerCount, 0, maxPlayers),
+      });
+    } catch (e) {
+      // API unreachable: keep showing the last known / fallback values.
+    }
+  };
+  load();
+  addTimer(component, setInterval(load, 30000));
+}
+
+// --- Server Time -----------------------------------------------------
+function startClock(component) {
+  const url = settings.server_time_api_url;
+
+  const applyClientFallback = () => {
+    const offsetMs = settings.server_time_utc_offset * 3600 * 1000;
+    const now = new Date(Date.now() + offsetMs);
+    const hours = now.getUTCHours();
+    component.setProperties({
+      timeHours: String(hours).padStart(2, "0"),
+      timeMinutes: String(now.getUTCMinutes()).padStart(2, "0"),
+      timeSeconds: String(now.getUTCSeconds()).padStart(2, "0"),
+      isDaytime: hours >= 6 && hours < 20,
+      dateLabel: now.toLocaleDateString(undefined, {
+        weekday: "long",
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+        timeZone: "UTC",
+      }),
+    });
+  };
+
+  const loadFromApi = async () => {
+    try {
+      const res = await fetch(url);
+      const data = await res.json();
+      if (component.isDestroying || component.isDestroyed) {
+        return;
+      }
+      component.setProperties({
+        timeHours: String(data.hour).padStart(2, "0"),
+        timeMinutes: String(data.minute).padStart(2, "0"),
+        timeSeconds: String(data.second ?? 0).padStart(2, "0"),
+        timeZoneLabel: data.tz ?? settings.server_time_zone_label,
+        isDaytime: !!data.isDay,
+        dateLabel: data.date
+          ? new Date(data.date).toLocaleDateString(undefined, {
+              weekday: "long",
+              month: "short",
+              day: "numeric",
+              year: "numeric",
+            })
+          : "",
+      });
+    } catch (e) {
+      applyClientFallback();
+    }
+  };
+
+  if (url) {
+    loadFromApi();
+    addTimer(component, setInterval(loadFromApi, 15000));
+  } else {
+    applyClientFallback();
+    addTimer(component, setInterval(applyClientFallback, 1000));
+  }
+}
+
+// --- Server Weather ----------------------------------------------------
+function fetchWeather(component) {
+  const url = settings.server_weather_api_url;
+  if (!url) {
+    return;
+  }
+  const load = async () => {
+    try {
+      const res = await fetch(url);
+      const data = await res.json();
+      if (component.isDestroying || component.isDestroyed) {
+        return;
+      }
+      component.setProperties({
+        weatherTempF: data.tempF,
+        weatherTempC: data.tempC ?? Math.round(((data.tempF - 32) * 5) / 9),
+        weatherCondition: data.condition,
+        weatherIcon: iconForCondition(data.icon),
+        weatherHigh: data.highF,
+        weatherLow: data.lowF,
+        weatherWind: data.windMph,
+        weatherHumidity: data.humidity,
+        weatherHourly: mapHourly(Array.isArray(data.hourly) ? data.hourly : FALLBACK_HOURLY),
+        weatherUpdatedLabel: "updated just now",
+        weatherMarkerPercent: markerPercent(data.tempF, data.lowF, data.highF),
+      });
+    } catch (e) {
+      // API unreachable: keep showing mock/fallback values.
+    }
+  };
+  load();
+  addTimer(component, setInterval(load, 600000));
+}
+
 export default {
   shouldRender() {
     return settings.show_sidebar_widgets && !document.querySelector(".rp-sidebar");
@@ -102,136 +235,18 @@ export default {
       ),
     });
 
-    this._rpTimers = [];
-    this._rpFetchStatus(component);
-    this._rpStartClock(component);
-    this._rpFetchWeather(component);
+    fetchStatus(component);
+    startClock(component);
+    fetchWeather(component);
   },
 
-  teardownComponent() {
-    (this._rpTimers || []).forEach(clearInterval);
-    this._rpTimers = [];
-  },
-
-  // --- Server Status -------------------------------------------------
-  _rpFetchStatus(component) {
-    const url = settings.server_status_api_url;
-    if (!url) {
-      return;
+  // Signature varies across Discourse versions (`component` vs
+  // `(args, component)`); accept whatever we're given defensively.
+  teardownComponent(...callArgs) {
+    const component = callArgs.find((a) => a && typeof a === "object" && "isDestroying" in a);
+    ((component && component._rpTimers) || []).forEach(clearInterval);
+    if (component) {
+      component._rpTimers = [];
     }
-    const load = async () => {
-      try {
-        const res = await fetch(url);
-        const data = await res.json();
-        if (component.isDestroying || component.isDestroyed) {
-          return;
-        }
-        const maxPlayers = Number(data.maxPlayers ?? settings.server_max_players);
-        const playerCount = Number(data.players ?? 0);
-        component.setProperties({
-          statusOnline: !!data.online,
-          playerCount,
-          maxPlayers,
-          playerPercent: markerPercent(playerCount, 0, maxPlayers),
-        });
-      } catch (e) {
-        // API unreachable: keep showing the last known / fallback values.
-      }
-    };
-    load();
-    this._rpTimers.push(setInterval(load, 30000));
-  },
-
-  // --- Server Time -----------------------------------------------------
-  _rpStartClock(component) {
-    const url = settings.server_time_api_url;
-
-    const applyClientFallback = () => {
-      const offsetMs = settings.server_time_utc_offset * 3600 * 1000;
-      const now = new Date(Date.now() + offsetMs);
-      const hours = now.getUTCHours();
-      component.setProperties({
-        timeHours: String(hours).padStart(2, "0"),
-        timeMinutes: String(now.getUTCMinutes()).padStart(2, "0"),
-        timeSeconds: String(now.getUTCSeconds()).padStart(2, "0"),
-        isDaytime: hours >= 6 && hours < 20,
-        dateLabel: now.toLocaleDateString(undefined, {
-          weekday: "long",
-          month: "short",
-          day: "numeric",
-          year: "numeric",
-          timeZone: "UTC",
-        }),
-      });
-    };
-
-    const loadFromApi = async () => {
-      try {
-        const res = await fetch(url);
-        const data = await res.json();
-        if (component.isDestroying || component.isDestroyed) {
-          return;
-        }
-        component.setProperties({
-          timeHours: String(data.hour).padStart(2, "0"),
-          timeMinutes: String(data.minute).padStart(2, "0"),
-          timeSeconds: String(data.second ?? 0).padStart(2, "0"),
-          timeZoneLabel: data.tz ?? settings.server_time_zone_label,
-          isDaytime: !!data.isDay,
-          dateLabel: data.date
-            ? new Date(data.date).toLocaleDateString(undefined, {
-                weekday: "long",
-                month: "short",
-                day: "numeric",
-                year: "numeric",
-              })
-            : "",
-        });
-      } catch (e) {
-        applyClientFallback();
-      }
-    };
-
-    if (url) {
-      loadFromApi();
-      this._rpTimers.push(setInterval(loadFromApi, 15000));
-    } else {
-      applyClientFallback();
-      this._rpTimers.push(setInterval(applyClientFallback, 1000));
-    }
-  },
-
-  // --- Server Weather ----------------------------------------------------
-  _rpFetchWeather(component) {
-    const url = settings.server_weather_api_url;
-    if (!url) {
-      return;
-    }
-    const load = async () => {
-      try {
-        const res = await fetch(url);
-        const data = await res.json();
-        if (component.isDestroying || component.isDestroyed) {
-          return;
-        }
-        component.setProperties({
-          weatherTempF: data.tempF,
-          weatherTempC: data.tempC ?? Math.round(((data.tempF - 32) * 5) / 9),
-          weatherCondition: data.condition,
-          weatherIcon: iconForCondition(data.icon),
-          weatherHigh: data.highF,
-          weatherLow: data.lowF,
-          weatherWind: data.windMph,
-          weatherHumidity: data.humidity,
-          weatherHourly: mapHourly(Array.isArray(data.hourly) ? data.hourly : FALLBACK_HOURLY),
-          weatherUpdatedLabel: "updated just now",
-          weatherMarkerPercent: markerPercent(data.tempF, data.lowF, data.highF),
-        });
-      } catch (e) {
-        // API unreachable: keep showing mock/fallback values.
-      }
-    };
-    load();
-    this._rpTimers.push(setInterval(load, 600000));
   },
 };
