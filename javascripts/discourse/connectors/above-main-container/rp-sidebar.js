@@ -11,7 +11,13 @@
 // not guarantee `this` inside setupComponent/teardownComponent refers
 // to this exported object, so all state is threaded through explicit
 // `component` arguments / properties instead.
+//
+// Inline `style` attributes are pre-built here with `htmlSafe` (the
+// `{{html-safe}}` *template* helper is deprecated in current Discourse) —
+// the template just binds the already-safe string directly.
 // ---------------------------------------------------------------
+
+import { htmlSafe } from "@ember/template";
 
 const FALLBACK_HOURLY = [
   { label: "10am", icon: "cloudy", tempF: 86 },
@@ -61,6 +67,14 @@ function mapHourly(hourly) {
   }));
 }
 
+function widthStyle(pct) {
+  return htmlSafe(`width: ${pct}%`);
+}
+
+function leftStyle(pct) {
+  return htmlSafe(`left: ${pct}%`);
+}
+
 function addTimer(component, id) {
   component._rpTimers = component._rpTimers || [];
   component._rpTimers.push(id);
@@ -81,11 +95,13 @@ function fetchStatus(component) {
       }
       const maxPlayers = Number(data.maxPlayers ?? settings.server_max_players);
       const playerCount = Number(data.players ?? 0);
+      const pct = markerPercent(playerCount, 0, maxPlayers);
       component.setProperties({
         statusOnline: !!data.online,
         playerCount,
         maxPlayers,
-        playerPercent: markerPercent(playerCount, 0, maxPlayers),
+        playerPercent: pct,
+        progressBarStyle: widthStyle(pct),
       });
     } catch (e) {
       // API unreachable: keep showing the last known / fallback values.
@@ -179,6 +195,7 @@ function fetchWeather(component) {
         weatherHourly: mapHourly(Array.isArray(data.hourly) ? data.hourly : FALLBACK_HOURLY),
         weatherUpdatedLabel: "updated just now",
         weatherMarkerPercent: markerPercent(data.tempF, data.lowF, data.highF),
+        weatherMarkerStyle: leftStyle(markerPercent(data.tempF, data.lowF, data.highF)),
       });
     } catch (e) {
       // API unreachable: keep showing mock/fallback values.
@@ -196,6 +213,12 @@ export default {
   setupComponent(args, component) {
     const maxPlayers = settings.server_max_players;
     const playerCount = settings.server_status_fallback_players;
+    const initialPlayerPercent = markerPercent(playerCount, 0, maxPlayers);
+    const initialWeatherMarkerPercent = markerPercent(
+      settings.server_weather_mock_temp_f,
+      settings.server_weather_mock_low_f,
+      settings.server_weather_mock_high_f
+    );
 
     component.setProperties({
       settings,
@@ -207,7 +230,8 @@ export default {
       statusOnline: settings.server_status_fallback_state === "online",
       playerCount,
       maxPlayers,
-      playerPercent: markerPercent(playerCount, 0, maxPlayers),
+      playerPercent: initialPlayerPercent,
+      progressBarStyle: widthStyle(initialPlayerPercent),
 
       // Server time defaults
       timeHours: "--",
@@ -228,11 +252,8 @@ export default {
       weatherHumidity: settings.server_weather_mock_humidity,
       weatherHourly: mapHourly(FALLBACK_HOURLY),
       weatherUpdatedLabel: "using fallback data",
-      weatherMarkerPercent: markerPercent(
-        settings.server_weather_mock_temp_f,
-        settings.server_weather_mock_low_f,
-        settings.server_weather_mock_high_f
-      ),
+      weatherMarkerPercent: initialWeatherMarkerPercent,
+      weatherMarkerStyle: leftStyle(initialWeatherMarkerPercent),
     });
 
     fetchStatus(component);

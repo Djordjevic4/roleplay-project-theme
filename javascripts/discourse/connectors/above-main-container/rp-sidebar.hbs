@@ -17,7 +17,7 @@
         <div class="rp-progress-track">
           <div
             class="rp-progress-fill"
-            style={{html-safe (concat "width:" this.playerPercent "%")}}
+            style={{this.progressBarStyle}}
           ></div>
         </div>
 
@@ -91,7 +91,7 @@
           <div class="rp-weather-range-track">
             <div
               class="rp-weather-range-marker"
-              style={{html-safe (concat "left:" this.weatherMarkerPercent "%")}}
+              style={{this.weatherMarkerStyle}}
             ></div>
           </div>
           <span class="rp-weather-range-high">{{this.weatherHigh}}°</span>
