@@ -1,0 +1,119 @@
+<div class="rp-sidebar">
+
+  {{#if this.showStatus}}
+    <div class="rp-widget rp-widget-status">
+      <div class="rp-widget-header">Server Status</div>
+      <div class="rp-widget-body">
+        <div class="rp-status-line">
+          <span class={{concat "rp-status-dot " (if this.statusOnline "is-online" "is-offline")}}></span>
+          <span class="rp-status-label">{{if this.statusOnline "Online" "Offline"}}</span>
+        </div>
+        <div class="rp-status-server-name">{{this.settings.server_name}}</div>
+
+        <div class="rp-player-count">
+          <span class="rp-player-count-current">{{this.playerCount}}</span>
+          <span class="rp-player-count-max">/ {{this.maxPlayers}} players</span>
+        </div>
+        <div class="rp-progress-track">
+          <div
+            class="rp-progress-fill"
+            style={{html-safe (concat "width:" this.playerPercent "%")}}
+          ></div>
+        </div>
+
+        <div class="rp-widget-footer">
+          <span>{{this.settings.server_ip}}</span>
+          <span>{{this.settings.server_platform_label}}</span>
+        </div>
+      </div>
+    </div>
+  {{/if}}
+
+  {{#if this.showTime}}
+    <div class="rp-widget rp-widget-time">
+      <div class="rp-widget-header">Server Time</div>
+      <div class="rp-time-panel {{if this.isDaytime "is-day" "is-night"}}">
+        <div class="rp-time-label">{{if this.isDaytime "DAYTIME" "NIGHTTIME"}}</div>
+        <div class="rp-time-clock">
+          <span>{{this.timeHours}}</span>:<span>{{this.timeMinutes}}</span>
+          <span class="rp-time-seconds">:{{this.timeSeconds}}
+            <sup>{{this.timeZoneLabel}}</sup>
+          </span>
+        </div>
+        <div class="rp-time-date">{{this.dateLabel}}</div>
+        <div class="rp-time-illustration">
+          {{d-icon (if this.isDaytime "sun" "moon")}}
+        </div>
+      </div>
+    </div>
+  {{/if}}
+
+  {{#if this.showWeather}}
+    <div class="rp-widget rp-widget-weather">
+      <div class="rp-widget-header">Server Weather</div>
+      <div class="rp-widget-body">
+        <div class="rp-weather-now">
+          {{d-icon this.weatherIcon class="rp-weather-icon"}}
+          <div class="rp-weather-temps">
+            <div class="rp-weather-temp-f">
+              {{this.weatherTempF}}°F
+              <span class="rp-weather-temp-c">({{this.weatherTempC}}°C)</span>
+            </div>
+            <div class="rp-weather-condition">{{this.weatherCondition}}</div>
+          </div>
+        </div>
+
+        <div class="rp-weather-stats">
+          <div class="rp-weather-stat">
+            {{d-icon "arrow-up"}}
+            <span class="rp-weather-stat-value">{{this.weatherHigh}}°</span>
+            <span class="rp-weather-stat-label">High</span>
+          </div>
+          <div class="rp-weather-stat">
+            {{d-icon "arrow-down"}}
+            <span class="rp-weather-stat-value">{{this.weatherLow}}°</span>
+            <span class="rp-weather-stat-label">Low</span>
+          </div>
+          <div class="rp-weather-stat">
+            {{d-icon "wind"}}
+            <span class="rp-weather-stat-value">{{this.weatherWind}}</span>
+            <span class="rp-weather-stat-label">mph · Breeze</span>
+          </div>
+          <div class="rp-weather-stat">
+            {{d-icon "droplet"}}
+            <span class="rp-weather-stat-value">{{this.weatherHumidity}}%</span>
+            <span class="rp-weather-stat-label">Humidity</span>
+          </div>
+        </div>
+
+        <div class="rp-weather-range">
+          <span class="rp-weather-range-low">{{this.weatherLow}}°</span>
+          <div class="rp-weather-range-track">
+            <div
+              class="rp-weather-range-marker"
+              style={{html-safe (concat "left:" this.weatherMarkerPercent "%")}}
+            ></div>
+          </div>
+          <span class="rp-weather-range-high">{{this.weatherHigh}}°</span>
+        </div>
+
+        <div class="rp-weather-upcoming-label">Upcoming</div>
+        <div class="rp-weather-hourly">
+          {{#each this.weatherHourly as |slot|}}
+            <div class="rp-weather-hour">
+              <span class="rp-weather-hour-label">{{slot.label}}</span>
+              {{d-icon slot.iconName}}
+              <span class="rp-weather-hour-temp">{{slot.tempF}}°</span>
+            </div>
+          {{/each}}
+        </div>
+
+        <div class="rp-widget-footer">
+          <span>{{this.settings.server_weather_location_label}}</span>
+          <span>{{this.weatherUpdatedLabel}}</span>
+        </div>
+      </div>
+    </div>
+  {{/if}}
+
+</div>

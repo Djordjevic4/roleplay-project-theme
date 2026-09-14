@@ -1,0 +1,10 @@
+{
+  "name": "Roleplay Project",
+  "about_url": "https://github.com/your-org/roleplay-project-theme",
+  "license_url": "https://github.com/your-org/roleplay-project-theme/blob/main/LICENSE",
+  "theme_version": "1.0.0",
+  "minimum_discourse_version": "3.1.0",
+  "assets": {},
+  "learn_more": "https://meta.discourse.org/t/beginners-guide-to-using-discourse-themes/91966",
+  "component": false
+}

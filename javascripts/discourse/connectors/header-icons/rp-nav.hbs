@@ -1,0 +1,42 @@
+<ul class="rp-header-nav">
+  <li>
+    <a href={{this.settings.ucp_url}} class="rp-nav-link">
+      {{d-icon "id-card"}}<span>UCP</span>
+    </a>
+  </li>
+
+  <li class="rp-nav-dropdown">
+    <a href={{this.settings.forums_url}} class="rp-nav-link">
+      {{d-icon "comments"}}<span>Forums</span>{{d-icon "chevron-down" class="rp-caret"}}
+    </a>
+    <ul class="rp-dropdown-menu">
+      <li><a href="/categories">Categories</a></li>
+      <li><a href="/latest">Latest Topics</a></li>
+      <li><a href="/top">Top Topics</a></li>
+    </ul>
+  </li>
+
+  <li>
+    <a href={{this.settings.staff_url}} class="rp-nav-link">
+      {{d-icon "user-shield"}}<span>Staff</span>
+    </a>
+  </li>
+
+  <li>
+    <a href={{this.settings.events_url}} class="rp-nav-link">
+      {{d-icon "calendar-days"}}<span>Events</span>
+    </a>
+  </li>
+
+  <li>
+    <a href={{this.settings.shop_url}} class="rp-nav-link">
+      {{d-icon "cart-shopping"}}<span>Shop</span>
+    </a>
+  </li>
+
+  <li>
+    <a href={{this.settings.thread_builder_url}} class="rp-nav-link">
+      {{d-icon "layer-group"}}<span>Thread Builder</span>
+    </a>
+  </li>
+</ul>

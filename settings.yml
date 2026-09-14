@@ -1,0 +1,142 @@
+# =============================================================
+# Roleplay Project theme settings
+# Grouped by purpose. See README.md for a full description of
+# every setting and where the API-driven widgets pull data from.
+# =============================================================
+
+# --- Branding -------------------------------------------------
+brand_name_primary:
+  default: "Roleplay"
+  type: string
+brand_name_secondary:
+  default: "Project"
+  type: string
+brand_home_url:
+  default: "/"
+  type: string
+brand_icon:
+  default: "server"
+  type: string
+brand_logo:
+  type: upload
+  default: ""
+
+# --- Colors -----------------------------------------------------
+primary_color:
+  default: "#1685FF"
+  type: string
+primary_color_hover:
+  default: "#2D9CFF"
+  type: string
+
+# --- Header navigation links (URLs only — labels/icons are fixed
+#     to match the reference design; edit these to point anywhere) -
+forums_url:
+  default: "/categories"
+  type: string
+ucp_url:
+  default: "/my/preferences"
+  type: string
+staff_url:
+  default: "/about"
+  type: string
+events_url:
+  default: "/latest"
+  type: string
+shop_url:
+  default: "/latest"
+  type: string
+thread_builder_url:
+  default: "/latest"
+  type: string
+
+show_custom_header_nav:
+  default: true
+  type: bool
+show_custom_search_bar:
+  default: true
+  type: bool
+
+# --- Sidebar widgets: enable / disable --------------------------
+show_sidebar_widgets:
+  default: true
+  type: bool
+show_server_status:
+  default: true
+  type: bool
+show_server_time:
+  default: true
+  type: bool
+show_server_weather:
+  default: true
+  type: bool
+
+# --- Server Status widget ----------------------------------------
+# If server_status_api_url is left blank, the widget falls back to
+# the static values below (server_name / server_ip / server_max_players)
+# and displays STATUS as configured in server_status_fallback_state.
+server_status_api_url:
+  default: ""
+  type: string
+server_name:
+  default: "Roleplay Project"
+  type: string
+server_ip:
+  default: "play.roleplayproject.net"
+  type: string
+server_platform_label:
+  default: "FiveM"
+  type: string
+server_max_players:
+  default: 1000
+  type: integer
+server_status_fallback_state:
+  default: "online"
+  type: enum
+  choices:
+    - "online"
+    - "offline"
+server_status_fallback_players:
+  default: 0
+  type: integer
+
+# --- Server Time widget -------------------------------------------
+# If server_time_api_url is blank, the widget falls back to the
+# visitor's browser clock (client-side).
+server_time_api_url:
+  default: ""
+  type: string
+server_time_utc_offset:
+  default: 0
+  type: integer
+server_time_zone_label:
+  default: "UTC"
+  type: string
+
+# --- Server Weather widget -----------------------------------------
+# If server_weather_api_url is blank, the widget falls back to the
+# static mock values below so the layout can still be previewed.
+server_weather_api_url:
+  default: ""
+  type: string
+server_weather_location_label:
+  default: "Los Santos, SA"
+  type: string
+server_weather_mock_temp_f:
+  default: 82
+  type: integer
+server_weather_mock_condition:
+  default: "Overcast skies"
+  type: string
+server_weather_mock_high_f:
+  default: 101
+  type: integer
+server_weather_mock_low_f:
+  default: 64
+  type: integer
+server_weather_mock_wind_mph:
+  default: 8
+  type: integer
+server_weather_mock_humidity:
+  default: 49
+  type: integer

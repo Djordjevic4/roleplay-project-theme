@@ -1,0 +1,982 @@
+// =================================================================
+// Roleplay Project — dark FiveM / GTA roleplay community theme
+// =================================================================
+// $primary_color / $primary_color_hover come from settings.yml and
+// are compiled in automatically by Discourse (theme settings are
+// exposed to SCSS as $-prefixed variables of the same name).
+// =================================================================
+
+:root {
+  --rp-bg: #0b0e13;
+  --rp-panel: #171b21;
+  --rp-panel-header: #20252d;
+  --rp-border: #2d333c;
+  --rp-blue: #{$primary_color};
+  --rp-blue-hover: #{$primary_color_hover};
+  --rp-text: #f4f6f8;
+  --rp-text-muted: #8793a3;
+  --rp-green: #16c46a;
+  --rp-red: #ff4b4b;
+  --rp-radius-sm: 4px;
+  --rp-radius-md: 6px;
+  --rp-header-height: 80px;
+  --rp-topbar-height: 48px;
+  --rp-content-max: 1250px;
+  --rp-sidebar-width: 300px;
+  --rp-gap: 18px;
+}
+
+// -----------------------------------------------------------------
+// Base
+// -----------------------------------------------------------------
+body {
+  background: var(--rp-bg);
+  color: var(--rp-text);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+#main-outlet-wrapper,
+.wrap {
+  max-width: var(--rp-content-max);
+}
+
+a {
+  color: var(--rp-blue);
+  &:hover {
+    color: var(--rp-blue-hover);
+  }
+}
+
+// -----------------------------------------------------------------
+// Header
+// -----------------------------------------------------------------
+.d-header {
+  background: var(--rp-bg) !important;
+  border-bottom: 1px solid var(--rp-border);
+  height: var(--rp-header-height);
+  position: relative;
+
+  .d-header-wrap {
+    max-width: var(--rp-content-max);
+  }
+
+  .panel {
+    align-items: center;
+    height: var(--rp-header-height);
+  }
+}
+
+// Hide native logo/title once our custom brand mark has mounted
+// (see connectors/home-logo-contents-before/rp-brand.js). If for any
+// reason our connector fails to render on a future Discourse version,
+// this class is never added and the native logo remains visible.
+body.rp-brand-active {
+  #site-logo,
+  .title,
+  .home-logo img,
+  .home-logo .title {
+    display: none;
+  }
+}
+
+.rp-brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  text-decoration: none;
+  white-space: nowrap;
+
+  .rp-brand-mark {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    border-radius: var(--rp-radius-sm);
+    background: var(--rp-panel-header);
+    border: 1px solid var(--rp-border);
+    color: var(--rp-text);
+    flex-shrink: 0;
+  }
+
+  .rp-brand-logo-img {
+    width: 30px;
+    height: 30px;
+    object-fit: contain;
+    flex-shrink: 0;
+  }
+
+  .rp-brand-text {
+    font-size: 1.15em;
+    font-weight: 700;
+    line-height: 1;
+  }
+
+  .rp-brand-primary {
+    color: var(--rp-text);
+  }
+
+  .rp-brand-secondary {
+    color: var(--rp-text-muted);
+    font-weight: 500;
+    margin-left: 4px;
+  }
+
+  &:hover {
+    .rp-brand-primary,
+    .rp-brand-secondary {
+      color: var(--rp-text);
+    }
+  }
+}
+
+// Custom center nav, visually centered independent of DOM position
+// within the header (works regardless of exactly where the
+// `header-icons` outlet mounts inside .d-header).
+.rp-header-nav {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+
+  > li {
+    position: relative;
+  }
+
+  .rp-nav-link {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 12px;
+    border-radius: var(--rp-radius-sm);
+    color: var(--rp-text-muted);
+    font-size: 0.8em;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    text-decoration: none;
+    white-space: nowrap;
+    transition: background-color 0.15s ease, color 0.15s ease;
+
+    .d-icon {
+      font-size: 0.95em;
+      opacity: 0.85;
+    }
+
+    &:hover {
+      background: var(--rp-panel-header);
+      color: var(--rp-text);
+    }
+  }
+
+  .rp-caret {
+    font-size: 0.7em;
+    margin-left: -2px;
+    opacity: 0.7;
+  }
+
+  .rp-dropdown-menu {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    min-width: 180px;
+    background: var(--rp-panel);
+    border: 1px solid var(--rp-border);
+    border-radius: var(--rp-radius-md);
+    list-style: none;
+    margin: 4px 0 0;
+    padding: 6px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+    z-index: 300;
+
+    li a {
+      display: block;
+      padding: 8px 10px;
+      border-radius: var(--rp-radius-sm);
+      color: var(--rp-text);
+      font-size: 0.85em;
+      font-weight: 500;
+      text-decoration: none;
+      text-transform: none;
+      letter-spacing: normal;
+
+      &:hover {
+        background: var(--rp-panel-header);
+        color: var(--rp-blue-hover);
+      }
+    }
+  }
+
+  .rp-nav-dropdown:hover .rp-dropdown-menu,
+  .rp-nav-dropdown:focus-within .rp-dropdown-menu {
+    display: block;
+  }
+}
+
+// Native right-side header icons (avatar, notifications, messages, etc.)
+// are left fully functional — only lightly restyled to fit the palette.
+.d-header-icons {
+  .icon,
+  .btn-flat {
+    color: var(--rp-text-muted);
+
+    &:hover {
+      color: var(--rp-text);
+    }
+  }
+}
+
+.current-user .avatar {
+  border-radius: 50%;
+}
+
+// The theme's own search box (in the secondary bar) replaces the
+// native header search icon on desktop; kept for mobile fallback.
+@media (min-width: 768px) {
+  #search-button {
+    display: none;
+  }
+}
+
+// -----------------------------------------------------------------
+// Secondary bar: Home + Search
+// -----------------------------------------------------------------
+.rp-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  max-width: var(--rp-content-max);
+  margin: 0 auto;
+  height: var(--rp-topbar-height);
+  padding: 0 14px;
+  border-bottom: 1px solid var(--rp-border);
+}
+
+.rp-home-link {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--rp-text);
+  font-weight: 600;
+  font-size: 0.9em;
+  text-decoration: none;
+
+  .d-icon {
+    color: var(--rp-text-muted);
+  }
+
+  &:hover {
+    color: var(--rp-blue-hover);
+  }
+}
+
+.rp-search-trigger {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 280px;
+  max-width: 45vw;
+  height: 34px;
+  padding: 0 12px;
+  background: var(--rp-panel);
+  border: 1px solid var(--rp-border);
+  border-radius: var(--rp-radius-sm);
+  color: var(--rp-text-muted);
+  font-size: 0.85em;
+  cursor: pointer;
+  transition: border-color 0.15s ease;
+
+  .d-icon {
+    font-size: 0.9em;
+    opacity: 0.7;
+  }
+
+  .rp-search-placeholder {
+    text-align: left;
+  }
+
+  &:hover,
+  &:focus-visible {
+    border-color: var(--rp-blue);
+    color: var(--rp-text);
+    outline: none;
+  }
+}
+
+// Native breadcrumbs on category pages keep functioning; just
+// re-skinned to sit comfortably inside the dark palette.
+.category-breadcrumb {
+  background: transparent;
+  .badge-category__wrapper {
+    color: var(--rp-text);
+  }
+}
+
+// -----------------------------------------------------------------
+// Sidebar layout (Server Status / Time / Weather column)
+// -----------------------------------------------------------------
+// Falls back gracefully to a single stacked column when :has() isn't
+// supported, or when the sidebar connector doesn't render.
+#main-outlet-wrapper:has(> .rp-sidebar) {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--rp-gap);
+}
+
+#main-outlet-wrapper:has(> .rp-sidebar) > #main-outlet {
+  flex: 1 1 auto;
+  min-width: 0;
+  order: 1;
+}
+
+.rp-sidebar {
+  flex: 0 0 var(--rp-sidebar-width);
+  width: var(--rp-sidebar-width);
+  order: 2;
+  display: flex;
+  flex-direction: column;
+  gap: var(--rp-gap);
+  padding-top: 20px;
+}
+
+.rp-widget {
+  background: var(--rp-panel);
+  border: 1px solid var(--rp-border);
+  border-radius: var(--rp-radius-md);
+  overflow: hidden;
+}
+
+.rp-widget-header {
+  height: 44px;
+  display: flex;
+  align-items: center;
+  padding: 0 14px;
+  background: var(--rp-panel-header);
+  border-bottom: 1px solid var(--rp-border);
+  font-weight: 700;
+  font-size: 0.95em;
+  color: var(--rp-text);
+}
+
+.rp-widget-body {
+  padding: 14px;
+}
+
+.rp-widget-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid var(--rp-border);
+  font-size: 0.78em;
+  color: var(--rp-text-muted);
+}
+
+// --- Server Status ------------------------------------------------
+.rp-status-line {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 2px;
+}
+
+.rp-status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--rp-text-muted);
+
+  &.is-online {
+    background: var(--rp-green);
+  }
+
+  &.is-offline {
+    background: var(--rp-red);
+  }
+}
+
+.rp-status-label {
+  font-weight: 700;
+  color: var(--rp-green);
+  font-size: 0.95em;
+}
+
+.rp-status-dot.is-offline + .rp-status-label {
+  color: var(--rp-red);
+}
+
+.rp-status-server-name {
+  color: var(--rp-text-muted);
+  font-size: 0.85em;
+  margin-bottom: 14px;
+}
+
+.rp-player-count {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  margin-bottom: 8px;
+
+  .rp-player-count-current {
+    font-size: 1.8em;
+    font-weight: 800;
+    line-height: 1;
+  }
+
+  .rp-player-count-max {
+    color: var(--rp-text-muted);
+    font-size: 0.85em;
+  }
+}
+
+.rp-progress-track {
+  height: 6px;
+  border-radius: 3px;
+  background: var(--rp-border);
+  overflow: hidden;
+}
+
+.rp-progress-fill {
+  height: 100%;
+  background: var(--rp-blue);
+  border-radius: 3px;
+  transition: width 0.3s ease;
+}
+
+// --- Server Time ----------------------------------------------------
+.rp-time-panel {
+  position: relative;
+  padding: 18px 14px 16px;
+  text-align: center;
+  overflow: hidden;
+  background: linear-gradient(180deg, #1b2432 0%, #10151d 100%);
+
+  &.is-night {
+    background: linear-gradient(180deg, #0d1320 0%, #05070b 100%);
+  }
+}
+
+.rp-time-label {
+  font-size: 0.7em;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: var(--rp-blue-hover);
+  margin-bottom: 6px;
+}
+
+.rp-time-clock {
+  font-size: 1.9em;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+
+  .rp-time-seconds {
+    font-size: 0.55em;
+    font-weight: 700;
+    color: var(--rp-text-muted);
+    vertical-align: middle;
+
+    sup {
+      font-size: 0.7em;
+      margin-left: 2px;
+    }
+  }
+}
+
+.rp-time-date {
+  margin-top: 4px;
+  font-size: 0.78em;
+  color: var(--rp-text-muted);
+}
+
+.rp-time-illustration {
+  position: absolute;
+  top: 10px;
+  right: 14px;
+  font-size: 1.4em;
+  color: color-mix(in srgb, var(--rp-blue) 35%, transparent);
+}
+
+// --- Server Weather --------------------------------------------------
+.rp-weather-now {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+
+  .rp-weather-icon {
+    font-size: 2em;
+    color: var(--rp-text-muted);
+  }
+
+  .rp-weather-temp-f {
+    font-size: 1.6em;
+    font-weight: 800;
+    line-height: 1;
+  }
+
+  .rp-weather-temp-c {
+    font-size: 0.55em;
+    font-weight: 500;
+    color: var(--rp-text-muted);
+  }
+
+  .rp-weather-condition {
+    font-size: 0.8em;
+    color: var(--rp-text-muted);
+    margin-top: 2px;
+  }
+}
+
+.rp-weather-stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+  margin-bottom: 12px;
+  text-align: center;
+
+  .rp-weather-stat {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+
+    .d-icon {
+      color: var(--rp-red);
+      font-size: 0.85em;
+    }
+
+    .rp-weather-stat-value {
+      font-weight: 700;
+      font-size: 0.9em;
+    }
+
+    .rp-weather-stat-label {
+      font-size: 0.65em;
+      color: var(--rp-text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+  }
+
+  .rp-weather-stat:nth-child(2) .d-icon {
+    color: var(--rp-blue-hover);
+  }
+
+  .rp-weather-stat:nth-child(3) .d-icon,
+  .rp-weather-stat:nth-child(4) .d-icon {
+    color: var(--rp-text-muted);
+  }
+}
+
+.rp-weather-range {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 16px;
+  font-size: 0.75em;
+  color: var(--rp-text-muted);
+
+  .rp-weather-range-track {
+    position: relative;
+    flex: 1;
+    height: 4px;
+    border-radius: 2px;
+    background: linear-gradient(90deg, var(--rp-blue) 0%, var(--rp-green) 45%, var(--rp-red) 100%);
+  }
+
+  .rp-weather-range-marker {
+    position: absolute;
+    top: 50%;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #fff;
+    border: 2px solid var(--rp-panel);
+    transform: translate(-50%, -50%);
+  }
+}
+
+.rp-weather-upcoming-label {
+  font-size: 0.7em;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--rp-text-muted);
+  text-transform: uppercase;
+  margin-bottom: 10px;
+}
+
+.rp-weather-hourly {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 4px;
+  text-align: center;
+}
+
+.rp-weather-hour {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.75em;
+
+  .rp-weather-hour-label {
+    color: var(--rp-text-muted);
+    font-size: 0.85em;
+  }
+
+  .d-icon {
+    color: var(--rp-text-muted);
+  }
+
+  .rp-weather-hour-temp {
+    font-weight: 700;
+  }
+}
+
+// -----------------------------------------------------------------
+// Page title + "Start new topic" button
+// -----------------------------------------------------------------
+#list-area .top-lists,
+.categories-and-latest,
+.category-list-wrapper {
+  h1,
+  h2.category-list-heading {
+    font-size: 1.7em;
+    font-weight: 800;
+    color: var(--rp-text);
+  }
+}
+
+#create-topic {
+  background: var(--rp-blue);
+  border: none;
+  border-radius: var(--rp-radius-sm);
+  font-weight: 700;
+  color: #fff;
+
+  &:hover {
+    background: var(--rp-blue-hover);
+  }
+
+  .d-icon {
+    color: #fff;
+  }
+}
+
+// -----------------------------------------------------------------
+// Category list (index) — restyled into dark panels/rows
+// -----------------------------------------------------------------
+table.category-list,
+.category-list {
+  width: 100%;
+  border-collapse: collapse;
+  background: transparent;
+  margin-bottom: var(--rp-gap);
+  display: block;
+
+  thead {
+    display: none;
+  }
+
+  tbody {
+    display: block;
+    background: var(--rp-panel);
+    border: 1px solid var(--rp-border);
+    border-radius: var(--rp-radius-md);
+    overflow: hidden;
+  }
+
+  tr {
+    display: flex;
+    align-items: center;
+    min-height: 78px;
+    padding: 10px 16px;
+    border-bottom: 1px solid var(--rp-border);
+    background: var(--rp-panel);
+    transition: background-color 0.15s ease;
+
+    &:last-child {
+      border-bottom: none;
+    }
+
+    &:hover {
+      background: #1b202a;
+    }
+
+    // Parent categories used purely to group their children (flagged
+    // by javascripts/discourse/api-initializers/rp-init.js when a
+    // category actually has subcategories) render as a bare section
+    // header instead of a normal clickable row.
+    &.rp-parent-heading {
+      display: block;
+      min-height: 46px;
+      padding: 0 16px;
+      line-height: 46px;
+      background: var(--rp-panel-header);
+      font-weight: 700;
+      text-transform: uppercase;
+      font-size: 0.85em;
+      letter-spacing: 0.03em;
+
+      td {
+        display: none;
+      }
+
+      &::before {
+        content: attr(data-category-name);
+      }
+    }
+  }
+
+  td {
+    display: block;
+    border: none;
+    padding: 0;
+  }
+
+  td.category,
+  td:first-child {
+    flex: 1 1 auto;
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .category-text-title {
+    min-width: 0;
+  }
+
+  .category-title-link,
+  .category-name {
+    font-weight: 700;
+    font-size: 0.98em;
+    color: var(--rp-text);
+    text-decoration: none;
+  }
+
+  .category-description {
+    color: var(--rp-text-muted);
+    font-size: 0.82em;
+    margin-top: 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  td.topics,
+  td:nth-child(2) {
+    flex: 0 0 90px;
+    text-align: center;
+    color: var(--rp-text-muted);
+    font-size: 0.8em;
+
+    .number {
+      display: block;
+      font-size: 1.3em;
+      font-weight: 700;
+      color: var(--rp-text);
+    }
+  }
+
+  td.latest,
+  td:last-child {
+    flex: 0 0 260px;
+    max-width: 260px;
+  }
+
+  .latest-topic-title,
+  .last-topic .topic-link {
+    display: block;
+    font-size: 0.85em;
+    font-weight: 600;
+    color: var(--rp-text);
+    text-decoration: none;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .last-posters,
+  .topic-last-activity {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 4px;
+    font-size: 0.78em;
+    color: var(--rp-text-muted);
+  }
+
+  .avatar {
+    width: 24px;
+    height: 24px;
+    border-radius: var(--rp-radius-sm);
+  }
+}
+
+// Category icon badges — Discourse's native "icon" category style.
+// Rendered as a compact badge in a rounded dark-blue background.
+.badge-category__wrapper,
+.badge-category-parent-wrapper {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.badge-category,
+[class*="category-icon"] {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--rp-blue) 15%, transparent) !important;
+  color: var(--rp-blue-hover) !important;
+  font-size: 0.95em;
+}
+
+// -----------------------------------------------------------------
+// Category show page (topic list) — pins/locks, replies/views, activity
+// -----------------------------------------------------------------
+.topic-list {
+  background: var(--rp-panel);
+  border: 1px solid var(--rp-border);
+  border-radius: var(--rp-radius-md);
+  overflow: hidden;
+
+  .topic-list-item {
+    border-bottom: 1px solid var(--rp-border);
+
+    &:hover {
+      background: #1b202a;
+    }
+  }
+
+  .main-link .title {
+    color: var(--rp-text);
+    font-weight: 600;
+  }
+
+  .link-bottom-line,
+  .discourse-tags {
+    color: var(--rp-text-muted);
+  }
+
+  .posts,
+  .views,
+  .activity {
+    color: var(--rp-text-muted);
+  }
+}
+
+.category-heading,
+.category-title-header {
+  h1 {
+    font-weight: 800;
+    color: var(--rp-text);
+  }
+
+  .category-description-text,
+  p {
+    color: var(--rp-text-muted);
+  }
+}
+
+.subcategory-list,
+.category-boxes {
+  background: var(--rp-panel);
+  border: 1px solid var(--rp-border);
+  border-radius: var(--rp-radius-md);
+  margin-bottom: var(--rp-gap);
+  overflow: hidden;
+}
+
+// -----------------------------------------------------------------
+// Responsive
+// -----------------------------------------------------------------
+@media (max-width: 1300px) {
+  :root {
+    --rp-content-max: 96vw;
+  }
+}
+
+@media (max-width: 900px) {
+  .rp-header-nav .rp-nav-link span {
+    display: none;
+  }
+
+  table.category-list .category-description,
+  .category-list .category-description {
+    display: none;
+  }
+
+  table.category-list td.latest,
+  .category-list td:last-child {
+    flex: 0 0 180px;
+    max-width: 180px;
+  }
+}
+
+@media (max-width: 767px) {
+  :root {
+    --rp-header-height: 64px;
+  }
+
+  .rp-header-nav {
+    display: none;
+  }
+
+  #main-outlet-wrapper:has(> .rp-sidebar) {
+    display: block;
+  }
+
+  .rp-sidebar {
+    width: 100%;
+    flex: none;
+    padding-top: 12px;
+  }
+
+  .rp-topbar {
+    padding: 0 10px;
+  }
+
+  .rp-search-trigger {
+    width: 100%;
+    max-width: 60vw;
+  }
+
+  table.category-list tr,
+  .category-list tr {
+    flex-wrap: wrap;
+    height: auto;
+    padding: 12px;
+  }
+
+  table.category-list td.topics,
+  table.category-list td.latest,
+  .category-list td:nth-child(2),
+  .category-list td:last-child {
+    flex: 1 1 100%;
+    max-width: none;
+    text-align: left;
+    margin-top: 8px;
+  }
+
+  #search-button {
+    display: flex;
+  }
+
+  .rp-weather-stats,
+  .rp-weather-hourly {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}

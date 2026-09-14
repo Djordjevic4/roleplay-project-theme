@@ -1,0 +1,11 @@
+<a href={{this.settings.brand_home_url}} class="rp-brand">
+  {{#if this.logoUrl}}
+    <img src={{this.logoUrl}} alt={{this.settings.brand_name_primary}} class="rp-brand-logo-img" />
+  {{else}}
+    <span class="rp-brand-mark">{{d-icon this.settings.brand_icon}}</span>
+  {{/if}}
+  <span class="rp-brand-text">
+    <span class="rp-brand-primary">{{this.settings.brand_name_primary}}</span>
+    <span class="rp-brand-secondary">{{this.settings.brand_name_secondary}}</span>
+  </span>
+</a>
