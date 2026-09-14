@@ -1171,27 +1171,14 @@ table.category-list,
   }
 }
 
-// Category icon badges — Discourse's native "icon" category style.
-// Rendered as a compact badge in a rounded dark-blue background.
-.badge-category__wrapper,
-.badge-category-parent-wrapper {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.badge-category,
-[class*="category-icon"] {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 34px;
-  height: 34px;
-  border-radius: 50%;
-  background: color-mix(in srgb, var(--rp-blue) 15%, transparent) !important;
-  color: var(--rp-blue-hover) !important;
-  font-size: 0.95em;
-}
+// (Category badges are rendered entirely by this theme's own
+// .rp-cat-badge markup now — see javascripts/discourse/lib/
+// rp-category-cards.js — so native .badge-category elements are left
+// completely alone. An earlier version of this file forced every
+// .badge-category to a 34px circle, which was meant for that custom
+// markup but actually applied globally, breaking Discourse's native
+// small inline category badges used elsewhere — e.g. the composer's
+// category picker dropdown and breadcrumb selectors.)
 
 // -----------------------------------------------------------------
 // Category show page (topic list) — pins/locks, replies/views, activity
