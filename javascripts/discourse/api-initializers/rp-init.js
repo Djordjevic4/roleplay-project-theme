@@ -54,6 +54,18 @@ function updateSidebarVisibility(api) {
   });
 }
 
+// Same reasoning as updateSidebarVisibility above: the banner
+// (above-main-container outlet, see rp-topbar.js) stays mounted across
+// client-side transitions too, so its own shouldRender can't react to
+// route changes on its own. Only show it on the categories index.
+function updateBannerVisibility(api) {
+  const router = api.container.lookup("service:router");
+  const shouldShow = isCategoriesIndexRoute(router);
+  document.querySelectorAll(".rp-banner").forEach((el) => {
+    el.style.display = shouldShow ? "" : "none";
+  });
+}
+
 // Forces the real 2-column layout (main content + right sidebar).
 //
 // Computed-style inspection on a live install revealed #main-outlet's
@@ -97,6 +109,7 @@ export default apiInitializer((api) => {
   api.onPageChange(() => {
     setTimeout(() => {
       updateSidebarVisibility(api);
+      updateBannerVisibility(api);
       ensureLayoutGrid();
       markParentRows(api);
     }, 80);
