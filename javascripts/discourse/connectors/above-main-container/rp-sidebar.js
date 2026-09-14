@@ -18,6 +18,13 @@
 // ---------------------------------------------------------------
 
 import { htmlSafe } from "@ember/template";
+import { getOwner } from "@ember/application";
+
+function isCategoriesIndexRoute(component) {
+  const router = getOwner(component)?.lookup("service:router");
+  const name = router?.currentRouteName || "";
+  return name.startsWith("discovery.categories");
+}
 
 const FALLBACK_HOURLY = [
   { label: "10am", icon: "cloudy", tempF: 86 },
@@ -265,8 +272,14 @@ function fetchRecentActivity(component) {
 }
 
 export default {
-  shouldRender() {
-    return settings.show_sidebar_widgets && !document.querySelector(".rp-sidebar");
+  // Sidebar is only shown on the categories index ("Forums" page) —
+  // not on individual category/topic-list pages.
+  shouldRender(args, component) {
+    return (
+      settings.show_sidebar_widgets &&
+      !document.querySelector(".rp-sidebar") &&
+      isCategoriesIndexRoute(component)
+    );
   },
 
   setupComponent(args, component) {

@@ -290,7 +290,23 @@ export default apiInitializer((api) => {
     }
   }
 
+  function cleanupIfNotIndex() {
+    const router = api.container.lookup("service:router");
+    if (isCategoriesIndexRoute(router)) {
+      return;
+    }
+    // Ember's outlet re-render doesn't know about elements we appended
+    // manually, so a stale .rp-forums-page from a previous visit to
+    // the categories index would otherwise stay stuck on top of
+    // whatever route we've navigated to since.
+    renderToken++; // invalidate any in-flight fetch from the old page
+    document.querySelectorAll(".rp-forums-page").forEach((el) => el.remove());
+  }
+
   api.onPageChange(() => {
-    setTimeout(render, 60);
+    setTimeout(() => {
+      cleanupIfNotIndex();
+      render();
+    }, 60);
   });
 });
