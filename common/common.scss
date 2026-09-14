@@ -659,20 +659,69 @@ body.rp-brand-active {
   }
 }
 
-// -----------------------------------------------------------------
-// Page title + "Start new topic" button
-// -----------------------------------------------------------------
-#list-area .top-lists,
-.categories-and-latest,
-.category-list-wrapper {
-  h1,
-  h2.category-list-heading {
-    font-size: 1.7em;
-    font-weight: 800;
-    color: var(--rp-text);
+// --- Recent Activity (4th sidebar widget) ------------------------------
+.rp-activity-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.rp-activity-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--rp-border);
+  text-decoration: none;
+  transition: background-color 0.15s ease;
+
+  &:last-child {
+    border-bottom: none;
+  }
+
+  &:hover {
+    background: #1b212a;
   }
 }
 
+.rp-activity-avatar {
+  border-radius: var(--rp-radius-sm);
+  flex-shrink: 0;
+}
+
+.rp-activity-info {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.rp-activity-title {
+  font-size: 0.83em;
+  font-weight: 600;
+  color: var(--rp-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.rp-activity-meta {
+  font-size: 0.75em;
+  color: var(--rp-text-muted);
+  margin-top: 2px;
+}
+
+.rp-activity-empty {
+  padding: 14px;
+  color: var(--rp-text-muted);
+  font-size: 0.85em;
+}
+
+// -----------------------------------------------------------------
+// Page title + "Start new topic" button
+// -----------------------------------------------------------------
+
+// #create-topic is the native "+ New Topic" button — still used as-is
+// on individual category pages (e.g. the "Server Announcements" topic
+// list), which this theme does not replace with custom markup.
 #create-topic {
   background: var(--rp-blue);
   border: none;
@@ -689,22 +738,56 @@ body.rp-brand-active {
   }
 }
 
-// Best-effort safety net so the title and "+ New Topic" button sit on
-// one row (title left, button right) regardless of exactly which
-// wrapper class this Discourse version uses for that row.
-#list-area > div:first-child,
-.categories-and-latest > .row,
-.category-list-wrapper > .row {
+// On the categories index, rp-categories.js renders its own title +
+// button row (native title/button placement varied too much across
+// list styles to restyle reliably in place).
+.rp-forums-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
   flex-wrap: wrap;
   gap: 12px;
+  margin-bottom: var(--rp-gap);
+
+  h1 {
+    font-size: 1.7em;
+    font-weight: 800;
+    color: var(--rp-text);
+    margin: 0;
+  }
+}
+
+.rp-new-topic-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 36px;
+  padding: 0 16px;
+  background: var(--rp-blue);
+  border-radius: var(--rp-radius-sm);
+  color: #fff;
+  font-weight: 700;
+  font-size: 0.9em;
+  text-decoration: none;
+  white-space: nowrap;
+
+  &:hover {
+    background: var(--rp-blue-hover);
+    color: #fff;
+  }
 }
 
 // Hide the native "welcome back" hero banner and the Categories/Latest
-// tab switcher — the reference design has neither.
-.discovery-hero {
+// tab switcher — the reference design has neither. Cast a wider net
+// than just `.discovery-hero` since this element's exact class has
+// changed across Discourse versions/features (custom homepage banner,
+// NUX welcome hero, etc).
+.discovery-hero,
+.hero-container,
+.custom-homepage-banner,
+#hero,
+[class*="-hero"],
+[class^="hero-"] {
   display: none !important;
 }
 

@@ -174,43 +174,49 @@ export default apiInitializer((api) => {
       return;
     }
 
-    const anchor =
-      document.querySelector("#list-area") ||
-      document.querySelector(".category-list")?.parentElement ||
-      document.getElementById("main-outlet");
+    // #main-outlet is one of the oldest, most stable ids in Discourse —
+    // used directly rather than guessing at #list-area/.category-list,
+    // whose presence turned out to depend on the site's native list
+    // style and left native title/hero/"latest" elements untouched
+    // (and mis-positioned) alongside our cards.
+    const anchor = document.getElementById("main-outlet");
     if (!anchor) {
       return;
     }
 
     const myToken = ++renderToken;
 
-    document
-      .querySelectorAll(
-        ".category-list, .categories-boxes, .categories-and-top-topics, .subcategories-with-featured-topics"
-      )
-      .forEach((el) => (el.style.display = "none"));
+    let page = anchor.querySelector(":scope > .rp-forums-page");
+    const nativeChildren = Array.from(anchor.children).filter((el) => el !== page);
+    nativeChildren.forEach((el) => (el.style.display = "none"));
 
-    let container = document.querySelector(".rp-cat-sections");
-    if (!container) {
-      container = document.createElement("div");
-      container.className = "rp-cat-sections";
-      anchor.appendChild(container);
+    if (!page) {
+      page = document.createElement("div");
+      page.className = "rp-forums-page";
+      anchor.appendChild(page);
     }
-    container.innerHTML = `<div class="rp-cat-loading">Loading categories…</div>`;
+    page.innerHTML = `
+      <div class="rp-forums-header">
+        <h1>Forums</h1>
+        <a class="rp-new-topic-btn" href="/new-topic">+ Start new topic</a>
+      </div>
+      <div class="rp-cat-sections"><div class="rp-cat-loading">Loading categories…</div></div>
+    `;
 
     try {
       const categories = await loadCategoryData();
       if (myToken !== renderToken) {
         return; // navigated away while fetching
       }
-      container.innerHTML = buildHtml(categories);
+      page.querySelector(".rp-cat-sections").innerHTML = buildHtml(categories);
     } catch (e) {
       if (myToken !== renderToken) {
         return;
       }
-      container.remove();
-      // Fall back to the native list rather than leaving a blank page.
-      document.querySelectorAll(".category-list").forEach((el) => (el.style.display = ""));
+      // Fall back to whatever Discourse natively rendered rather than
+      // leaving a blank page.
+      page.remove();
+      nativeChildren.forEach((el) => (el.style.display = ""));
     }
   }
 

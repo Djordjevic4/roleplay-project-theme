@@ -80,6 +80,30 @@ function addTimer(component, id) {
   component._rpTimers.push(id);
 }
 
+function relativeTime(dateStr) {
+  if (!dateStr) {
+    return "";
+  }
+  const date = new Date(dateStr);
+  const diffMs = Date.now() - date.getTime();
+  const mins = Math.floor(diffMs / 60000);
+  if (mins < 1) {
+    return "just now";
+  }
+  if (mins < 60) {
+    return `${mins}m ago`;
+  }
+  const hours = Math.floor(mins / 60);
+  if (hours < 24) {
+    return `${hours}h ago`;
+  }
+  const days = Math.floor(hours / 24);
+  if (days < 30) {
+    return `${days}d ago`;
+  }
+  return date.toLocaleDateString(undefined, { month: "short", day: "numeric" });
+}
+
 // --- Server Status -------------------------------------------------
 function fetchStatus(component) {
   const url = settings.server_status_api_url;
@@ -205,6 +229,41 @@ function fetchWeather(component) {
   addTimer(component, setInterval(load, 600000));
 }
 
+// --- Recent Activity (4th widget, below Server Weather) ---------------
+// Uses Discourse's own /latest.json public endpoint — same reliability
+// pattern as the category cards in rp-categories.js — rather than
+// trying to relocate/restyle whatever native "Latest" panel a given
+// category-page-style setting happens to render.
+function fetchRecentActivity(component) {
+  const count = settings.recent_activity_count;
+  const load = async () => {
+    try {
+      const res = await fetch("/latest.json?order=activity");
+      const data = await res.json();
+      if (component.isDestroying || component.isDestroyed) {
+        return;
+      }
+      const users = data.users || [];
+      const items = (data.topic_list?.topics || []).slice(0, count).map((t) => {
+        const posterId = t.posters?.[0]?.user_id;
+        const user = users.find((u) => u.id === posterId);
+        return {
+          title: t.title,
+          url: `/t/${t.slug}/${t.id}`,
+          username: user?.username || "",
+          avatarUrl: user?.avatar_template ? user.avatar_template.replace("{size}", "30") : null,
+          timeAgo: relativeTime(t.bumped_at),
+        };
+      });
+      component.set("recentActivity", items);
+    } catch (e) {
+      // Non-critical widget: leave whatever was last shown (or empty).
+    }
+  };
+  load();
+  addTimer(component, setInterval(load, 60000));
+}
+
 export default {
   shouldRender() {
     return settings.show_sidebar_widgets && !document.querySelector(".rp-sidebar");
@@ -225,6 +284,8 @@ export default {
       showStatus: settings.show_server_status,
       showTime: settings.show_server_time,
       showWeather: settings.show_server_weather,
+      showRecentActivity: settings.show_recent_activity,
+      recentActivity: [],
 
       // Server status defaults (used until/unless the API responds)
       statusOnline: settings.server_status_fallback_state === "online",
@@ -259,6 +320,7 @@ export default {
     fetchStatus(component);
     startClock(component);
     fetchWeather(component);
+    fetchRecentActivity(component);
   },
 
   // Signature varies across Discourse versions (`component` vs

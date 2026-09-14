@@ -70,6 +70,12 @@ show_server_time:
 show_server_weather:
   default: true
   type: bool
+show_recent_activity:
+  default: true
+  type: bool
+recent_activity_count:
+  default: 5
+  type: integer
 
 # --- Server Status widget ----------------------------------------
 # If server_status_api_url is left blank, the widget falls back to

@@ -116,4 +116,25 @@
     </div>
   {{/if}}
 
+  {{#if this.showRecentActivity}}
+    <div class="rp-widget rp-widget-activity">
+      <div class="rp-widget-header">Recent Activity</div>
+      <div class="rp-activity-list">
+        {{#each this.recentActivity as |item|}}
+          <a class="rp-activity-item" href={{item.url}}>
+            {{#if item.avatarUrl}}
+              <img class="rp-activity-avatar" src={{item.avatarUrl}} width="30" height="30" loading="lazy">
+            {{/if}}
+            <span class="rp-activity-info">
+              <span class="rp-activity-title">{{item.title}}</span>
+              <span class="rp-activity-meta">{{item.username}} · {{item.timeAgo}}</span>
+            </span>
+          </a>
+        {{else}}
+          <div class="rp-activity-empty">No recent activity</div>
+        {{/each}}
+      </div>
+    </div>
+  {{/if}}
+
 </div>
