@@ -38,19 +38,10 @@ loose_categories_label:
   default: "Categories"
   type: string
 ucp_url:
-  default: "/my/preferences"
+  default: "https://bucp.roleplayproject.net"
   type: string
 staff_url:
   default: "/about"
-  type: string
-events_url:
-  default: "/latest"
-  type: string
-shop_url:
-  default: "/latest"
-  type: string
-thread_builder_url:
-  default: "/latest"
   type: string
 
 show_custom_brand:

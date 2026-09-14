@@ -81,7 +81,8 @@ untouched rather than leaving a blank page.
 | `brand_logo` | Optional logo image upload (overrides the icon) |
 | `primary_color` / `primary_color_hover` | Accent blue used everywhere (buttons, links, icon badges) |
 | `forums_url` | FORUMS nav link target (default `/categories`) |
-| `ucp_url`, `staff_url`, `events_url`, `shop_url`, `thread_builder_url` | The other 5 header nav links |
+| `ucp_url` | UCP nav link target (default `https://bucp.roleplayproject.net`) |
+| `staff_url` | STAFF nav link target |
 | `show_custom_header_nav` | Turn off the custom nav bar entirely (escape hatch) |
 | `show_custom_search_bar` | Turn off the custom Home+Search bar (escape hatch) |
 | `show_sidebar_widgets` | Master switch for the whole right sidebar |
@@ -172,9 +173,9 @@ worth verifying on your actual install:
 
 ## What was implemented vs. the screenshot
 
-- ✅ Header: dark bar, split-color brand text, 6-item center nav with icons,
-  FORUMS dropdown, native right-side user/notification/message icons kept
-  functional and restyled.
+- ✅ Header: dark bar, split-color brand text, center nav (UCP, FORUMS,
+  STAFF) with icons, FORUMS dropdown, native right-side user/notification/
+  message icons kept functional and restyled.
 - ✅ Secondary bar: Home link + dark search field that opens Discourse's
   real search.
 - ✅ Two-column layout (~78/22 split, 18px gap), responsive stacking.
@@ -190,6 +191,5 @@ worth verifying on your actual install:
 - ✅ Native "welcome back" hero banner and Categories/Latest tab switcher
   hidden to match the reference (which has neither).
 - ⚠️ Nav icons are semantic FontAwesome choices (id-card, comments,
-  user-shield, calendar-days, cart-shopping, layer-group) rather than
-  pixel-identical copies of the screenshot's icons, which were too small/
-  ambiguous to identify exactly.
+  user-shield) rather than pixel-identical copies of the screenshot's
+  icons, which were too small/ambiguous to identify exactly.
