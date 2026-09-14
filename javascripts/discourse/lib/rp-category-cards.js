@@ -87,6 +87,15 @@ export function toPlainCategory(cat) {
     parent_category_id: cat.parent_category_id ?? cat.parentCategoryId ?? null,
     position: cat.position,
     uploaded_logo: cat.uploaded_logo ?? cat.uploadedLogo,
+    // Confirmed via a live install's /c/{id}/show.json response: a
+    // category's chosen badge style lives in style_type ("icon" /
+    // "emoji" / "square"), with the actual icon name in `icon` and the
+    // emoji short name in `emoji` (both fields exist regardless of
+    // which style is currently active, so style_type is what decides
+    // which one to use).
+    style_type: cat.style_type ?? cat.styleType,
+    icon: cat.icon,
+    emoji: cat.emoji,
   };
 }
 
@@ -94,6 +103,26 @@ export function getSiteCategories(api) {
   const site =
     api.container.lookup("service:site") || api.container.lookup("site:main");
   return ((site && site.categories) || []).map(toPlainCategory);
+}
+
+// Renders a FontAwesome icon the same way Discourse's own category
+// badges do — a plain <svg><use href="#name"></use></svg> referencing
+// the icon sprite Discourse already loads on every page — so no icon
+// library import is needed here at all (this file builds raw HTML
+// strings, not templates).
+function faIconSvg(name) {
+  const safe = escapeHtml(name);
+  return `<svg class="fa d-icon d-icon-${safe} svg-icon fa-width-auto svg-string" width="1em" height="1em" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><use href="#${safe}"></use></svg>`;
+}
+
+// Confirmed emoji URL pattern from a live install's rendered HTML:
+// /images/emoji/{set}/{name}.png. The emoji set ("twitter" here) is a
+// site setting (Admin → Settings → emoji set) — hardcoded since this
+// theme is built for one specific site, not as a public marketplace
+// theme; update this if that site setting is ever changed.
+function emojiImg(name) {
+  const safe = escapeHtml(name);
+  return `<img class="emoji" src="/images/emoji/twitter/${safe}.png" width="20" height="20" alt="${safe}">`;
 }
 
 export function badgeHtml(cat) {
@@ -105,7 +134,16 @@ export function badgeHtml(cat) {
         <img src="${escapeHtml(logoUrl)}" alt="" width="20" height="20">
       </span>`;
   }
-  const inner = escapeHtml((cat.name || "?").charAt(0).toUpperCase());
+
+  let inner;
+  if (cat.style_type === "icon" && cat.icon) {
+    inner = faIconSvg(cat.icon);
+  } else if (cat.style_type === "emoji" && cat.emoji) {
+    inner = emojiImg(cat.emoji);
+  } else {
+    inner = escapeHtml((cat.name || "?").charAt(0).toUpperCase());
+  }
+
   return `<span class="rp-cat-badge" style="background:${color};color:${textColor}">${inner}</span>`;
 }
 
