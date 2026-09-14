@@ -1323,26 +1323,46 @@ table.category-list,
   }
 }
 
-.category-heading,
-.category-title-header {
-  h1 {
-    font-weight: 800;
-    color: var(--rp-text);
-  }
-
-  .category-description-text,
-  p {
-    color: var(--rp-text-muted);
-  }
-}
-
-.subcategory-list,
-.category-boxes {
+// Confirmed via a live install: <section class="category-heading">
+// exists on every category page but renders empty by default — title/
+// description/follow-button are injected into it by
+// javascripts/discourse/api-initializers/rp-category-header.js.
+.category-heading {
   background: var(--rp-panel);
   border: 1px solid var(--rp-border);
   border-radius: var(--rp-radius-md);
+  padding: 20px 24px;
   margin-bottom: var(--rp-gap);
-  overflow: hidden;
+}
+
+.rp-category-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.rp-category-header-text {
+  h1 {
+    font-size: 1.6em;
+    font-weight: 800;
+    color: var(--rp-text);
+    margin: 0 0 6px;
+  }
+
+  p {
+    color: var(--rp-text-muted);
+    margin: 0;
+    font-size: 0.9em;
+  }
+}
+
+// Also confirmed absent natively: the "Subforums" panel for a category
+// with subcategories is built by the same initializer, reusing the
+// .rp-cat-* card styles already defined above.
+.rp-subforums-section {
+  margin-bottom: var(--rp-gap);
 }
 
 // -----------------------------------------------------------------

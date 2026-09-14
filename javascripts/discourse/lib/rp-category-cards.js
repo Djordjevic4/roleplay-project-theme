@@ -1,0 +1,148 @@
+// Shared rendering helpers used by both rp-categories.js (the main
+// "Forums" category cards) and rp-category-header.js (the per-category
+// title/description banner + Subforums panel), so both surfaces render
+// categories identically without duplicating the markup/logic.
+
+export function escapeHtml(str) {
+  return String(str ?? "").replace(/[&<>"']/g, (c) =>
+    ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c])
+  );
+}
+
+export function relativeTime(dateStr) {
+  if (!dateStr) {
+    return "";
+  }
+  const date = new Date(dateStr);
+  const diffMs = Date.now() - date.getTime();
+  const mins = Math.floor(diffMs / 60000);
+  if (mins < 1) {
+    return "just now";
+  }
+  if (mins < 60) {
+    return `${mins}m ago`;
+  }
+  const hours = Math.floor(mins / 60);
+  if (hours < 24) {
+    return `${hours}h ago`;
+  }
+  const days = Math.floor(hours / 24);
+  if (days < 30) {
+    return `${days}d ago`;
+  }
+  return date.toLocaleDateString(undefined, { month: "short", day: "numeric" });
+}
+
+export function avatarHtml(avatarTemplate, size) {
+  if (!avatarTemplate) {
+    return "";
+  }
+  const src = escapeHtml(avatarTemplate.replace("{size}", size));
+  return `<img class="rp-cat-avatar" src="${src}" width="${size}" height="${size}" loading="lazy">`;
+}
+
+export async function fetchJSON(url) {
+  const res = await fetch(url, { headers: { Accept: "application/json" } });
+  if (!res.ok) {
+    throw new Error(`HTTP ${res.status} for ${url}`);
+  }
+  return res.json();
+}
+
+export async function loadLatestTopic(categoryId) {
+  try {
+    const data = await fetchJSON(`/c/${categoryId}.json`);
+    const topic = data.topic_list?.topics?.[0];
+    if (!topic) {
+      return null;
+    }
+    const posterId = topic.posters?.[0]?.user_id;
+    const user = data.users?.find((u) => u.id === posterId);
+    return {
+      title: topic.title,
+      url: `/t/${topic.slug}/${topic.id}`,
+      username: user?.username || "",
+      avatarTemplate: user?.avatar_template || "",
+      bumpedAt: topic.bumped_at,
+    };
+  } catch (e) {
+    return null;
+  }
+}
+
+// Category objects coming from Discourse's `site.categories` are Ember
+// model instances, not plain JSON — object-spreading them isn't
+// reliable, so pick fields out explicitly. A couple of fields are read
+// with a snake_case/camelCase fallback since Discourse hasn't been
+// fully consistent about that across its Category model over time.
+export function toPlainCategory(cat) {
+  return {
+    id: cat.id,
+    name: cat.name,
+    slug: cat.slug,
+    color: cat.color,
+    text_color: cat.text_color ?? cat.textColor,
+    description_text: cat.description_text ?? cat.descriptionText ?? "",
+    topic_count: cat.topic_count ?? cat.topicCount ?? 0,
+    parent_category_id: cat.parent_category_id ?? cat.parentCategoryId ?? null,
+    position: cat.position,
+    uploaded_logo: cat.uploaded_logo ?? cat.uploadedLogo,
+  };
+}
+
+export function getSiteCategories(api) {
+  const site =
+    api.container.lookup("service:site") || api.container.lookup("site:main");
+  return ((site && site.categories) || []).map(toPlainCategory);
+}
+
+export function badgeHtml(cat) {
+  const color = cat.color ? `#${cat.color}` : "#1685FF";
+  const textColor = cat.text_color ? `#${cat.text_color}` : "#fff";
+  const logoUrl = cat.uploaded_logo?.url;
+  if (logoUrl) {
+    return `<span class="rp-cat-badge rp-cat-badge-image" style="background:${color}">
+        <img src="${escapeHtml(logoUrl)}" alt="" width="20" height="20">
+      </span>`;
+  }
+  const inner = escapeHtml((cat.name || "?").charAt(0).toUpperCase());
+  return `<span class="rp-cat-badge" style="background:${color};color:${textColor}">${inner}</span>`;
+}
+
+export function rowHtml(cat) {
+  const latest = cat.rpLatest;
+  const latestHtml = latest
+    ? `<a class="rp-cat-latest" href="${escapeHtml(latest.url)}">
+        ${avatarHtml(latest.avatarTemplate, 36)}
+        <span class="rp-cat-latest-info">
+          <span class="rp-cat-latest-title">${escapeHtml(latest.title)}</span>
+          <span class="rp-cat-latest-meta"><span class="rp-cat-latest-user">${escapeHtml(
+            latest.username
+          )}</span> · ${escapeHtml(relativeTime(latest.bumpedAt))}</span>
+        </span>
+      </a>`
+    : `<span class="rp-cat-latest rp-cat-latest-empty">No topics yet</span>`;
+
+  return `<div class="rp-cat-row" data-category-id="${cat.id}">
+      <a class="rp-cat-main" href="/c/${escapeHtml(cat.slug)}/${cat.id}">
+        ${badgeHtml(cat)}
+        <span class="rp-cat-text">
+          <span class="rp-cat-name">${escapeHtml(cat.name)}</span>
+          <span class="rp-cat-desc">${escapeHtml(cat.description_text)}</span>
+        </span>
+      </a>
+      <span class="rp-cat-count">
+        <span class="rp-cat-count-number">${cat.topic_count ?? 0}</span>
+        posts
+      </span>
+      ${latestHtml}
+    </div>`;
+}
+
+export function sectionHtml(label, children) {
+  const rows = children.map(rowHtml).join("");
+  return `<div class="rp-cat-section">
+      <div class="rp-cat-section-header">${escapeHtml(label)}</div>
+      <div class="rp-cat-section-body">${rows}</div>
+    </div>`;
+}
