@@ -1573,7 +1573,7 @@ input.title-input {
     align-items: center;
     align-content: flex-start;
     justify-content: flex-start;
-    padding: 24px 14px;
+    padding: 14px 14px 20px;
     border-right: 1px solid #20242b;
     background: transparent;
     text-align: center;
@@ -1619,9 +1619,9 @@ input.title-input {
     align-items: center;
     justify-content: space-between;
     width: 100%;
-    padding: 10px 16px;
+    padding: 14px 20px 4px;
     margin: 0;
-    border-bottom: 1px solid #20242b;
+    border-bottom: none;
     color: var(--rp-text-muted);
     font-size: 0.8em;
   }
@@ -1634,15 +1634,16 @@ input.title-input {
 
   .regular.contents,
   .cooked {
-    padding: 16px 20px;
+    padding: 8px 20px 16px;
     overflow: visible;
     overflow-x: hidden;
   }
 
   // Bottom action bar (like/reply/share/etc.) — pushed to the right so
-  // the like/reaction control lands in the bottom-right corner. Wraps
-  // instead of forcing a horizontal scrollbar if it ever runs out of
-  // room (the reported scrollbar-under-every-post issue).
+  // the like/reaction control lands in the bottom-right corner, flush
+  // against the bottom edge of the card (no internal divider line).
+  // Wraps instead of forcing a horizontal scrollbar if it ever runs out
+  // of room (the reported scrollbar-under-every-post issue).
   .post-menu-area {
     display: flex;
     align-items: center;
@@ -1650,9 +1651,9 @@ input.title-input {
     flex-wrap: wrap;
     gap: 6px;
     width: 100%;
-    padding: 10px 16px;
+    padding: 0 16px 14px;
     margin: 0;
-    border-top: 1px solid #20242b;
+    border-top: none;
     margin-top: auto;
     overflow: visible;
     overflow-x: hidden;

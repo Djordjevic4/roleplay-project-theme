@@ -99,6 +99,19 @@ function enhancePost(article) {
   }
   article.dataset.rpPostEnhanced = "true";
 
+  // .post-infos (the date bar) turned out not to already sit inside
+  // .topic-body as assumed — it was rendering as its own separate
+  // strip above the whole avatar+content row, with a gap above the
+  // avatar. Force it to be the first child of .topic-body regardless
+  // of wherever it actually starts out, so the date bar always ends
+  // up as the top edge of the content column specifically (not
+  // spanning above the avatar too).
+  const topicBody = article.querySelector(".topic-body");
+  const postInfos = article.querySelector(".post-infos");
+  if (topicBody && postInfos && topicBody.firstElementChild !== postInfos) {
+    topicBody.insertBefore(postInfos, topicBody.firstChild);
+  }
+
   const wrap = document.createElement("div");
   wrap.className = "rp-post-user-info";
 
