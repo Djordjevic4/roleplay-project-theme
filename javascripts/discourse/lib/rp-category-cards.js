@@ -56,7 +56,20 @@ export async function fetchJSON(url) {
   return res.json();
 }
 
-export async function loadLatestTopic(categoryId) {
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+// A category with a genuinely real topic was intermittently showing
+// "No topics yet" — different categories on different page loads,
+// fixed by a refresh sometimes and not others. That pattern points to
+// Discourse's own rate limiting on its JSON endpoints: firing a fetch
+// for every category at once (see mapWithConcurrency below) could get
+// some of those parallel requests throttled, and a throttled request
+// was being silently treated as "this category has no topics" instead
+// of "this particular lookup failed". One retry after a short random
+// backoff (so retries don't all collide again) covers the rest.
+export async function loadLatestTopic(categoryId, attempt = 0) {
   try {
     const data = await fetchJSON(`/c/${categoryId}.json`);
     const topic = data.topic_list?.topics?.[0];
@@ -73,8 +86,31 @@ export async function loadLatestTopic(categoryId) {
       bumpedAt: topic.bumped_at,
     };
   } catch (e) {
+    if (attempt < 1) {
+      await sleep(400 + Math.random() * 400);
+      return loadLatestTopic(categoryId, attempt + 1);
+    }
     return null;
   }
+}
+
+// Runs `fn` over `items` with at most `limit` requests in flight at
+// once, instead of firing every request simultaneously (Promise.all)
+// — the likely trigger for the rate-limiting above.
+export async function mapWithConcurrency(items, limit, fn) {
+  const results = new Array(items.length);
+  let nextIndex = 0;
+
+  async function worker() {
+    while (nextIndex < items.length) {
+      const current = nextIndex++;
+      results[current] = await fn(items[current], current);
+    }
+  }
+
+  const workers = Array.from({ length: Math.min(limit, items.length) }, worker);
+  await Promise.all(workers);
+  return results;
 }
 
 // Category objects coming from Discourse's `site.categories` are Ember

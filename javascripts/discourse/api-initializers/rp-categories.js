@@ -2,6 +2,7 @@ import { apiInitializer } from "discourse/lib/api";
 import {
   getSiteCategories,
   loadLatestTopic,
+  mapWithConcurrency,
   sectionHtml,
 } from "../lib/rp-category-cards";
 
@@ -18,12 +19,14 @@ import {
 
 async function loadCategoryData(api) {
   const categories = getSiteCategories(api);
-  return Promise.all(
-    categories.map(async (cat) => ({
-      ...cat,
-      rpLatest: await loadLatestTopic(cat.id),
-    }))
-  );
+  // At most 4 in flight at once — firing every category's fetch
+  // simultaneously (the old Promise.all) could trip Discourse's own
+  // rate limiting on some of them, which silently looked like "this
+  // category has no topics" instead of "this lookup got throttled".
+  return mapWithConcurrency(categories, 4, async (cat) => ({
+    ...cat,
+    rpLatest: await loadLatestTopic(cat.id),
+  }));
 }
 
 function buildHtml(categories) {

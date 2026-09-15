@@ -3,6 +3,7 @@ import {
   escapeHtml,
   getSiteCategories,
   loadLatestTopic,
+  mapWithConcurrency,
   sectionHtml,
 } from "../lib/rp-category-cards";
 
@@ -95,9 +96,10 @@ export default apiInitializer((api) => {
       return;
     }
 
-    const withLatest = await Promise.all(
-      children.map(async (c) => ({ ...c, rpLatest: await loadLatestTopic(c.id) }))
-    );
+    const withLatest = await mapWithConcurrency(children, 4, async (c) => ({
+      ...c,
+      rpLatest: await loadLatestTopic(c.id),
+    }));
     if (myToken !== renderToken) {
       return; // navigated away while fetching
     }
