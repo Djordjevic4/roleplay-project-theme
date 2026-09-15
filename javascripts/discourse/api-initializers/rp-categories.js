@@ -1,5 +1,6 @@
 import { apiInitializer } from "discourse/lib/api";
 import {
+  fetchGlobalLatestTopics,
   getSiteCategories,
   loadLatestTopic,
   mapWithConcurrency,
@@ -19,13 +20,25 @@ import {
 
 async function loadCategoryData(api) {
   const categories = getSiteCategories(api);
-  // At most 4 in flight at once — firing every category's fetch
-  // simultaneously (the old Promise.all) could trip Discourse's own
-  // rate limiting on some of them, which silently looked like "this
-  // category has no topics" instead of "this lookup got throttled".
-  return mapWithConcurrency(categories, 4, async (cat) => ({
+
+  // One request covers "latest topic per category" for nearly every
+  // category in one shot — much faster than the old one-request-per-
+  // category approach ("Loading categories..." taking noticeably long)
+  // and immune to the rate-limiting that caused intermittent "No
+  // topics yet". Only categories NOT covered by this (very low-
+  // activity ones whose latest topic didn't make the top 100 sitewide)
+  // fall back to the slower per-category lookup, at most 4 at a time.
+  const globalLatest = await fetchGlobalLatestTopics();
+  const missing = categories.filter((cat) => !globalLatest.has(cat.id));
+  const fallbackLatest = await mapWithConcurrency(missing, 4, async (cat) => [
+    cat.id,
+    await loadLatestTopic(cat.id),
+  ]);
+  const fallbackMap = new Map(fallbackLatest);
+
+  return categories.map((cat) => ({
     ...cat,
-    rpLatest: await loadLatestTopic(cat.id),
+    rpLatest: globalLatest.get(cat.id) ?? fallbackMap.get(cat.id) ?? null,
   }));
 }
 

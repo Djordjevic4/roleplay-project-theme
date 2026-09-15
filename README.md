@@ -55,12 +55,18 @@ verified. Two earlier guesses (`header-icons`, `home-logo-contents-before`/
 Earlier versions of this theme restyled whatever Discourse's native category
 list rendered, which meant the result depended on the site's **desktop
 category page style** setting matching what the CSS expected. That setting
-is no longer relevant: `rp-categories.js` fetches category + latest-topic
-data directly from Discourse's own `/categories.json` and `/c/{id}.json`
-public JSON endpoints and renders the theme's own cards, so the result looks
-identical no matter which native list style your site has configured. If
-that fetch ever fails for any reason, the native list is shown again
-untouched rather than leaving a blank page.
+is no longer relevant: `rp-categories.js` reads category data from
+Discourse's own `site.categories` service, and gets "latest topic per
+category" data in a **single** `/latest.json` request covering (almost)
+every category at once — much faster than the one-request-per-category
+approach this started with, and effectively immune to Discourse's own rate
+limiting on its JSON endpoints (firing many parallel per-category requests
+was intermittently getting some of them throttled, which looked like "no
+topics" for an otherwise perfectly normal category). Only a category whose
+latest activity doesn't make that one page's cutoff falls back to an
+individual `/c/{id}.json` lookup (with a retry), a handful of requests at
+most rather than one per category. If everything fails, the native list is
+shown again untouched rather than leaving a blank page.
 
 ### Recommended category setup (to match the screenshots exactly)
 

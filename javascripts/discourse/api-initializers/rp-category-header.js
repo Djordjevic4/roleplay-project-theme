@@ -1,6 +1,7 @@
 import { apiInitializer } from "discourse/lib/api";
 import {
   escapeHtml,
+  fetchGlobalLatestTopics,
   getSiteCategories,
   loadLatestTopic,
   mapWithConcurrency,
@@ -96,9 +97,16 @@ export default apiInitializer((api) => {
       return;
     }
 
-    const withLatest = await mapWithConcurrency(children, 4, async (c) => ({
+    const globalLatest = await fetchGlobalLatestTopics();
+    const missing = children.filter((c) => !globalLatest.has(c.id));
+    const fallbackLatest = await mapWithConcurrency(missing, 4, async (c) => [
+      c.id,
+      await loadLatestTopic(c.id),
+    ]);
+    const fallbackMap = new Map(fallbackLatest);
+    const withLatest = children.map((c) => ({
       ...c,
-      rpLatest: await loadLatestTopic(c.id),
+      rpLatest: globalLatest.get(c.id) ?? fallbackMap.get(c.id) ?? null,
     }));
     if (myToken !== renderToken) {
       return; // navigated away while fetching

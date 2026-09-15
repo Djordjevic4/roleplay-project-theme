@@ -94,6 +94,41 @@ export async function loadLatestTopic(categoryId, attempt = 0) {
   }
 }
 
+// Fetches recent activity across the WHOLE site in one request and
+// groups it by category, instead of one request per category — much
+// faster (1 request instead of N) and effectively immune to the
+// per-category rate-limiting that loadLatestTopic()'s retry logic
+// exists for, since there's only ever one request in flight here.
+// Categories with genuinely older activity than fits on this one page
+// won't be covered — callers should fall back to loadLatestTopic() for
+// any category id missing from the returned map.
+export async function fetchGlobalLatestTopics() {
+  const map = new Map();
+  try {
+    const data = await fetchJSON("/latest.json?order=activity&per_page=100");
+    const users = data.users || [];
+    (data.topic_list?.topics || []).forEach((topic) => {
+      const categoryId = topic.category_id;
+      if (categoryId == null || map.has(categoryId)) {
+        return; // topics are already ordered by activity, so the
+        // first one seen per category is the most recent
+      }
+      const posterId = topic.posters?.[0]?.user_id;
+      const user = users.find((u) => u.id === posterId);
+      map.set(categoryId, {
+        title: topic.title,
+        url: `/t/${topic.slug}/${topic.id}`,
+        username: user?.username || "",
+        avatarTemplate: user?.avatar_template || "",
+        bumpedAt: topic.bumped_at,
+      });
+    });
+  } catch (e) {
+    // Empty map: callers fall back to loadLatestTopic() per category.
+  }
+  return map;
+}
+
 // Runs `fn` over `items` with at most `limit` requests in flight at
 // once, instead of firing every request simultaneously (Promise.all)
 // — the likely trigger for the rate-limiting above.
@@ -127,6 +162,7 @@ export function toPlainCategory(cat) {
     text_color: cat.text_color ?? cat.textColor,
     description_text: cat.description_text ?? cat.descriptionText ?? "",
     topic_count: cat.topic_count ?? cat.topicCount ?? 0,
+    post_count: cat.post_count ?? cat.postCount ?? 0,
     parent_category_id: cat.parent_category_id ?? cat.parentCategoryId ?? null,
     position: cat.position,
     uploaded_logo: cat.uploaded_logo ?? cat.uploadedLogo,
@@ -213,7 +249,7 @@ export function rowHtml(cat) {
         </span>
       </a>
       <span class="rp-cat-count">
-        <span class="rp-cat-count-number">${cat.topic_count ?? 0}</span>
+        <span class="rp-cat-count-number">${cat.post_count ?? cat.topic_count ?? 0}</span>
         posts
       </span>
       ${latestHtml}
