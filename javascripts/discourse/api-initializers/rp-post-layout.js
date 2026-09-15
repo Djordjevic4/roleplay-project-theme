@@ -73,6 +73,28 @@ function enhancePost(article) {
 
   avatarCol.appendChild(wrap);
 
+  // Move the "..." (show more actions) trigger up into the top bar
+  // next to the post date — it normally lives in the bottom action
+  // bar, and a pure-CSS reorder can't relocate an element into a
+  // different parent. Best-effort across a few possible class names
+  // since this wasn't confirmed against a live DOM dump; a silent
+  // no-op if none match, so nothing breaks either way. Note: clicking
+  // it still reveals the extra actions it normally would, just in
+  // their original spot at the bottom — only the trigger button moves.
+  const postInfos = article.querySelector(".post-infos");
+  const moreActionsBtn = article.querySelector(
+    ".show-more-actions, .post-action-menu__show-more, .double-button .show-more, .post-menu-area .show-more"
+  );
+  if (postInfos && moreActionsBtn) {
+    let actionsSlot = postInfos.querySelector(".rp-post-topbar-actions");
+    if (!actionsSlot) {
+      actionsSlot = document.createElement("span");
+      actionsSlot.className = "rp-post-topbar-actions";
+      postInfos.appendChild(actionsSlot);
+    }
+    actionsSlot.appendChild(moreActionsBtn);
+  }
+
   const username = namesEl.querySelector("a")?.textContent?.trim();
   if (!username) {
     return;

@@ -1522,15 +1522,25 @@ input.title-input {
 // confirm against, so a class that's changed on a given version just
 // leaves that one piece unstyled rather than breaking anything.
 // -----------------------------------------------------------------
+// Discourse's right-side scroll timeline (post progress indicator) —
+// hidden so the post cards can use the width it was reserving.
+.timeline-container,
+#topic-progress,
+.topic-timeline {
+  display: none !important;
+}
+
 .topic-post {
-  margin-bottom: var(--rp-gap);
+  margin-bottom: 15px;
   width: 100%;
+  overflow: visible;
 
   article.boxed {
     background: transparent;
     border: none;
     padding: 0;
     width: 100%;
+    overflow: visible;
   }
 
   > div,
@@ -1542,8 +1552,8 @@ input.title-input {
   }
 
   .row {
-    background: var(--rp-panel);
-    border: 1px solid var(--rp-border);
+    background: #121519;
+    border: 1px solid #20242b;
     border-radius: var(--rp-radius-md);
     overflow: hidden;
     max-width: none;
@@ -1561,19 +1571,20 @@ input.title-input {
     align-items: center;
     justify-content: flex-start;
     padding: 24px 14px;
-    border-right: 1px solid #23272e;
+    border-right: 1px solid #20242b;
     background: var(--rp-panel-header);
     text-align: center;
     box-sizing: border-box;
+    overflow: hidden;
 
     .post-avatar {
       margin: 0 0 12px;
     }
 
     img.avatar {
-      width: 130px !important;
-      height: 130px !important;
-      border-radius: 8px;
+      width: 120px !important;
+      height: 120px !important;
+      border-radius: 6px;
     }
   }
 
@@ -1587,15 +1598,13 @@ input.title-input {
     display: flex;
     flex-direction: column;
     padding: 0;
+    overflow: visible;
   }
 
   // Native post-infos (post date, whisper/wiki icons, etc.) restyled
-  // into a top bar. Discourse's "..." show-more-actions trigger lives
-  // in the bottom .post-menu-area by default, not here — if the
-  // reference needs it specifically at top-right next to the date,
-  // that requires moving it via JS rather than pure CSS (elements
-  // can only be reordered by CSS within their existing parent, not
-  // relocated into a different one) — flag it and we'll add that.
+  // into a top bar. The "..." show-more-actions trigger is moved here
+  // from the bottom action bar by rp-post-layout.js (a pure-CSS reorder
+  // can't relocate an element into a different parent).
   .post-infos {
     display: flex;
     align-items: center;
@@ -1603,28 +1612,46 @@ input.title-input {
     width: 100%;
     padding: 10px 16px;
     margin: 0;
-    border-bottom: 1px solid var(--rp-border);
+    border-bottom: 1px solid #20242b;
     color: var(--rp-text-muted);
     font-size: 0.8em;
+  }
+
+  .rp-post-topbar-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
   }
 
   .regular.contents,
   .cooked {
     padding: 16px 20px;
+    overflow: visible;
+    overflow-x: hidden;
   }
 
   // Bottom action bar (like/reply/share/etc.) — pushed to the right so
-  // the like/reaction control lands in the bottom-right corner.
+  // the like/reaction control lands in the bottom-right corner. Wraps
+  // instead of forcing a horizontal scrollbar if it ever runs out of
+  // room (the reported scrollbar-under-every-post issue).
   .post-menu-area {
     display: flex;
     align-items: center;
     justify-content: flex-end;
+    flex-wrap: wrap;
     gap: 6px;
     width: 100%;
     padding: 10px 16px;
     margin: 0;
-    border-top: 1px solid var(--rp-border);
+    border-top: 1px solid #20242b;
     margin-top: auto;
+    overflow: visible;
+    overflow-x: hidden;
+
+    .like-button,
+    .toggle-like {
+      margin-left: auto;
+    }
   }
 }
 
@@ -1658,7 +1685,7 @@ input.title-input {
 .rp-post-user-stats {
   margin-top: 14px;
   padding-top: 12px;
-  border-top: 1px solid var(--rp-border);
+  border-top: 1px solid #20242b;
   width: 100%;
   display: flex;
   flex-direction: column;
