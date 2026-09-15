@@ -2013,6 +2013,35 @@ button.more-actions,
 // the JS side (moving .controls, building the sidebar from real
 // fetched data).
 // -----------------------------------------------------------------
+// Staff-only "N deleted posts" notice, shown above the cover once
+// expanded — a real, useful moderation signal (not something to
+// delete), just unstyled and defaulting to a light background like
+// aside.quote and .fk-d-menu earlier.
+.staff-counters {
+  background: var(--rp-panel-header);
+  border: 1px solid var(--rp-red);
+  border-radius: var(--rp-radius-md);
+  margin-bottom: 12px;
+  padding: 10px 16px;
+  color: var(--rp-text);
+
+  a {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--rp-text);
+    text-decoration: none;
+
+    &:hover {
+      color: var(--rp-red);
+    }
+  }
+
+  .deleted-posts {
+    font-weight: 600;
+  }
+}
+
 // Discourse drops the "collapsed-info" class the moment the native
 // "Expand" toggle is clicked (confirmed live: className goes from
 // "about has-background" — no "collapsed-info" — once expanded), so
