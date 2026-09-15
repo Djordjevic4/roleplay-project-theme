@@ -1674,30 +1674,37 @@ input.title-input {
     }
   }
 
-  .user-title {
-    color: var(--rp-red);
-    font-size: 0.78em;
+  .user-title,
+  .primary-group-name {
+    color: #e74c3c;
+    font-size: 12px;
     font-weight: 700;
+    text-transform: uppercase;
     margin-top: 4px;
   }
 }
 
-.rp-post-user-stats {
+// Posts/likes mini stat box — dark inset card below the group title.
+.rp-post-user-stats,
+.user-stat-box {
   margin-top: 14px;
-  padding-top: 12px;
-  border-top: 1px solid #20242b;
   width: 100%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
+  box-sizing: border-box;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  padding: 10px;
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid #23272e;
+  border-radius: 6px;
   font-size: 0.76em;
   color: var(--rp-text-muted);
 
   .rp-post-stat {
     display: flex;
+    flex-direction: column;
     align-items: center;
-    gap: 5px;
+    gap: 3px;
   }
 
   .rp-post-stat-icon {
@@ -1706,7 +1713,7 @@ input.title-input {
   }
 
   .rp-post-stat-value {
-    color: var(--rp-text);
+    color: #fff;
     font-weight: 700;
   }
 }
@@ -1733,6 +1740,56 @@ input.title-input {
   border-radius: var(--rp-radius-md);
   padding: 16px 20px;
   margin-bottom: var(--rp-gap);
+}
+
+// Topic footer cleanup — the page ends right after the last post,
+// no suggested-topics/notification-options/new-topics-remaining
+// sections below it.
+#topic-footer-buttons,
+#topic-footer-main-buttons,
+.topic-notifications-options,
+.suggested-topics,
+.more-topics__container,
+.topic-read-more-container,
+.read-more-notice {
+  display: none !important;
+}
+
+// Post controls (link/flag/bookmark/edit/delete/reply) always visible
+// instead of hidden behind the "..." trigger, bottom-right of the card.
+//
+// NOTE: if any of flag/bookmark/edit/delete stop being reachable after
+// this (rather than just changing position), Discourse is likely only
+// rendering them into the DOM once "..." is clicked rather than merely
+// CSS-hiding them — in that case hiding button.more-actions below needs
+// to be reverted so people can still reach them.
+button.more-actions,
+.show-more-actions {
+  display: none !important;
+}
+
+.post-controls,
+.topic-post .actions {
+  display: flex !important;
+  opacity: 1 !important;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  align-self: flex-end;
+  margin-left: auto;
+}
+
+.post-controls button,
+.post-controls a,
+.topic-post .actions button,
+.topic-post .actions a {
+  color: var(--rp-text-muted);
+  transition: color 0.15s ease;
+
+  &:hover {
+    color: var(--rp-blue-hover);
+  }
 }
 
 // -----------------------------------------------------------------
