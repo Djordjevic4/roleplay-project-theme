@@ -2034,7 +2034,7 @@ section.about {
   // this theme already shows, and needlessly exposes the account
   // email on the profile page.
   .secondary {
-    display: none;
+    display: none !important;
   }
 
   .details {
@@ -2057,18 +2057,12 @@ section.about {
     flex-wrap: wrap;
     gap: 20px;
     width: 100%;
-    // Shifts the avatar+name row down past the cover's own bottom
-    // edge, so the avatar visually "hangs" half in / half out of the
-    // cover — the classic overlapping-avatar profile look. overflow:
-    // visible above (not hidden) is what lets this actually show
-    // instead of being clipped.
-    transform: translateY(40px);
     padding-bottom: 12px;
   }
 
   // Moved here from inside .primary by rp-user-profile.js so it can
-  // be pinned to the cover's own corner, independent of the avatar
-  // row's translateY shift above.
+  // be pinned to the cover's own corner, independent of anything
+  // happening in the avatar/name row below it.
   > .controls {
     position: absolute;
     top: 16px;
@@ -2108,6 +2102,17 @@ section.about {
   .user-profile-avatar {
     position: relative;
     flex: 0 0 auto;
+    // Only the avatar hangs below the cover's bottom edge (a fixed
+    // -40px, independent of how tall the name/quickinfo text next to
+    // it happens to be) — margin-bottom on .about below reserves
+    // exactly this much extra space. Letting the whole .primary row
+    // shift down via transform (the earlier approach) meant adding
+    // the quickinfo line made the row taller AND still shifted by the
+    // same fixed amount, so the total overflow grew past what the
+    // fixed margin accounted for and it started overlapping the
+    // sidebar underneath.
+    margin-bottom: -40px;
+    z-index: 1;
 
     img.avatar {
       width: 120px !important;
@@ -2389,8 +2394,10 @@ section.about {
   }
 
   section.about {
-    .primary {
-      transform: translateY(24px);
+    margin-bottom: 40px;
+
+    .user-profile-avatar {
+      margin-bottom: -24px;
     }
 
     .user-profile-avatar img.avatar {
