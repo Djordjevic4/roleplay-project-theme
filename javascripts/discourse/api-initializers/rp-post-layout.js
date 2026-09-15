@@ -186,28 +186,37 @@ function enhancePost(article) {
 
 // CSS align-items: stretch on .row was measured (via getBoundingClientRect
 // on a live install) to NOT be reliably stretching .topic-avatar to the
-// row's full height — it was rendering shorter and vertically offset,
-// as if some other rule were overriding align-self. Rather than keep
-// chasing that in CSS, this measures .row's actual rendered height in
-// JS and sets it directly as .topic-avatar's height, guaranteeing the
-// avatar column (and its border-right divider) always spans the true
-// full height of the card regardless of what CSS cascade is doing.
-// A ResizeObserver keeps it in sync if content reflows later (e.g. a
-// lazy-loaded image inside the post finishing loading).
+// row's full height. Rather than keep chasing that in CSS, this
+// measures .topic-body's actual rendered height in JS and sets it as
+// .topic-avatar's height, so the avatar column (and its border-right
+// divider) always spans the true full height of the card.
+//
+// IMPORTANT: this must observe .topic-body, NOT .row or .topic-avatar
+// itself. An earlier version observed .row and wrote to .topic-avatar,
+// which is a child of .row — growing the avatar can grow .row itself
+// (its height being derived from its tallest child), which re-fires
+// the observer on .row, which grows the avatar again, and so on: a
+// classic ResizeObserver feedback loop, which is exactly what made
+// the divider line grow without bound. .topic-body's own height is
+// driven purely by its own text content and is never affected by
+// .topic-avatar's height, so observing it can't create that loop.
 function syncAvatarHeight(article) {
-  const row = article.querySelector(".row");
+  const topicBody = article.querySelector(".topic-body");
   const avatarCol = article.querySelector(".topic-avatar");
-  if (!row || !avatarCol) {
+  if (!topicBody || !avatarCol) {
     return;
   }
   const sync = () => {
-    avatarCol.style.height = `${row.offsetHeight}px`;
+    const target = topicBody.offsetHeight;
+    if (Math.abs(target - avatarCol.offsetHeight) > 1) {
+      avatarCol.style.height = `${target}px`;
+    }
   };
   sync();
 
   if (window.ResizeObserver && !article.dataset.rpHeightObserved) {
     article.dataset.rpHeightObserved = "true";
-    new ResizeObserver(sync).observe(row);
+    new ResizeObserver(sync).observe(topicBody);
   }
 }
 
