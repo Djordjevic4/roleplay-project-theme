@@ -1617,13 +1617,33 @@ input.title-input {
     }
 
     .post-avatar {
-      margin: 0 0 12px;
+      // Confirmed via a live install: Discourse's own .avatar-flair
+      // positioning (top/right/bottom/left px values) is calculated
+      // against .post-avatar's own box, assuming its default smaller,
+      // non-centered avatar. Since our avatar is enlarged to 120px and
+      // centered inside a wider 190px column, .post-avatar was still
+      // the column's full width — matching its box to the avatar's
+      // actual 120px size below is what makes the flair's corner
+      // positioning line up with the avatar's real corner instead of
+      // the wider column's.
+      position: relative;
+      width: 120px;
+      margin: 0 auto 12px;
     }
 
     img.avatar {
       width: 120px !important;
       height: 120px !important;
       border-radius: 6px;
+    }
+
+    .avatar-flair {
+      top: auto !important;
+      left: auto !important;
+      right: -4px !important;
+      bottom: -4px !important;
+      width: 28px !important;
+      height: 28px !important;
     }
   }
 
