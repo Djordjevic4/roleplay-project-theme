@@ -2025,7 +2025,10 @@ section.about {
   border-radius: var(--rp-radius-md);
   overflow: visible;
   background: linear-gradient(135deg, #16233a 0%, var(--rp-bg) 70%);
-  margin-bottom: 56px;
+  // The avatar hangs -40px below its row (see .user-profile-avatar
+  // below) — this needs to clear that AND leave real breathing room
+  // before the sidebar/tabs start, not just barely cover the overlap.
+  margin-bottom: 90px;
   padding: 0;
 
   // The native "Joined / Last Post / Seen / Trust Level / Email /
