@@ -101,6 +101,19 @@ export async function countUserActions(username, filterCodes, attempt = 0) {
   }
 }
 
+// Confirmed live: topic.posters[0] is NOT reliably the most recent
+// poster — a topic's posters array can list the Original Poster
+// first, which showed the topic's original author as the category
+// card's "latest reply" instead of whoever actually replied last.
+// Discourse tags the real most-recent poster via a `extras` string
+// that includes "latest" (e.g. "latest single") — that's the one to
+// use, falling back to posters[0] only if none carry that flag.
+function latestPosterId(topic) {
+  const posters = topic.posters || [];
+  const latest = posters.find((p) => p.extras && p.extras.includes("latest"));
+  return (latest || posters[0])?.user_id;
+}
+
 // Fetches recent activity across the WHOLE site in one request and
 // groups it by category, instead of one request per category — much
 // faster (1 request instead of N) and effectively immune to Discourse's
@@ -122,7 +135,7 @@ export async function fetchGlobalLatestTopics() {
         return; // topics are already ordered by activity, so the
         // first one seen per category is the most recent
       }
-      const posterId = topic.posters?.[0]?.user_id;
+      const posterId = latestPosterId(topic);
       const user = users.find((u) => u.id === posterId);
       map.set(categoryId, {
         title: topic.title,
@@ -160,7 +173,7 @@ function latestFromTopic(topic, users) {
   if (!topic) {
     return null;
   }
-  const posterId = topic.posters?.[0]?.user_id;
+  const posterId = latestPosterId(topic);
   const user = users.find((u) => u.id === posterId);
   return {
     title: topic.title,
