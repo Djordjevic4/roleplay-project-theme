@@ -1557,6 +1557,15 @@ input.title-input {
     border-radius: var(--rp-radius-md);
     overflow: hidden;
     max-width: none;
+    // Positioning context for .post-menu-area below. Flexbox
+    // align-items: stretch alone proved unreliable for pinning the
+    // action bar to the true bottom of the card (it was following the
+    // text's natural height instead) — absolute positioning against
+    // this container is unaffected by that and always anchors to the
+    // actual bottom-right corner of the card, regardless of how tall
+    // the flex-stretch calculation ends up making .topic-body.
+    position: relative;
+    min-height: 210px;
   }
 
   // Fixed-width left author panel, stretched to the row's full height
@@ -1634,29 +1643,31 @@ input.title-input {
 
   .regular.contents,
   .cooked {
-    padding: 8px 20px 16px;
+    // Bottom padding reserves room so text never runs under the
+    // absolutely-positioned action bar in the corner.
+    padding: 8px 20px 44px;
     overflow: visible;
     overflow-x: hidden;
   }
 
-  // Bottom action bar (like/reply/share/etc.) — pushed to the right so
-  // the like/reaction control lands in the bottom-right corner, flush
-  // against the bottom edge of the card (no internal divider line).
-  // Wraps instead of forcing a horizontal scrollbar if it ever runs out
-  // of room (the reported scrollbar-under-every-post issue).
+  // Bottom action bar (like/reply/share/etc.) — absolutely positioned
+  // against .row (position: relative, above) so it always sits in the
+  // true bottom-right corner of the card regardless of how much text
+  // the post has, instead of following the text's natural height.
   .post-menu-area {
     display: flex;
     align-items: center;
     justify-content: flex-end;
     flex-wrap: wrap;
     gap: 6px;
-    width: 100%;
-    padding: 0 16px 14px;
+    position: absolute;
+    right: 16px;
+    bottom: 14px;
+    width: auto;
+    padding: 0;
     margin: 0;
     border-top: none;
-    margin-top: auto;
     overflow: visible;
-    overflow-x: hidden;
 
     .like-button,
     .toggle-like {
