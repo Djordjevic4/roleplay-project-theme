@@ -1463,6 +1463,36 @@ input.title-input {
   }
 }
 
+// Discourse's generic floating dropdown/menu wrapper — used for things
+// like the "Quote" toolbar that pops up when selecting text inside a
+// post — had no theme override anywhere, so (same class of bug as
+// aside.quote) it fell back to a hardcoded light background.
+.fk-d-menu {
+  background: var(--rp-panel-header);
+  border: 1px solid var(--rp-border);
+  border-radius: var(--rp-radius-sm);
+  color: var(--rp-text);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+
+  .quote-button .buttons {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    padding: 4px;
+  }
+
+  .btn {
+    background: transparent;
+    color: var(--rp-text);
+    border: none;
+
+    &:hover {
+      background: var(--rp-panel);
+      color: var(--rp-blue-hover);
+    }
+  }
+}
+
 .d-editor-button-bar {
   background: var(--rp-panel-header);
   border-bottom: 1px solid var(--rp-border);
