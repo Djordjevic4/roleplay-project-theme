@@ -1575,6 +1575,7 @@ input.title-input {
   // divider separates them, no separate panel color.
   .topic-avatar {
     flex: 0 0 190px;
+    align-self: stretch;
     width: 190px;
     height: 100%;
     display: flex;
@@ -1639,6 +1640,26 @@ input.title-input {
     display: flex;
     align-items: center;
     gap: 8px;
+  }
+
+  // Confirmed via a live install's full .row HTML: .topic-meta-data
+  // sits between .post-infos and .regular.contents, empty in the
+  // common case — but Discourse's own native styling can still give
+  // an empty element a border, which is what was showing up as an
+  // unexplained horizontal line there. Neutralized rather than
+  // display:none, in case it does carry real content sometimes (e.g.
+  // a "solved" indicator).
+  .topic-meta-data,
+  .post__actions,
+  .post-actions {
+    border: none;
+    margin: 0;
+    padding: 0;
+    min-height: 0;
+
+    &:empty {
+      display: none;
+    }
   }
 
   .regular.contents,
