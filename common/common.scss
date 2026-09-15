@@ -1562,7 +1562,9 @@ input.title-input {
   }
 
   .row {
-    background: #121519;
+    // Same background as the title card above (.title-wrapper) for
+    // visual consistency.
+    background: var(--rp-panel);
     border: 1px solid #20242b;
     border-radius: var(--rp-radius-md);
     overflow: hidden;
