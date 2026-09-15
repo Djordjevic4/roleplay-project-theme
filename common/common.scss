@@ -2454,6 +2454,18 @@ section.about {
   }
 }
 
+// Discourse reuses the .nav-pills component for the secondary
+// "All / Topics / Replies / Read / ..." filter row inside the Activity
+// tab's content too, not just the primary Summary/Activity/... tabs
+// above — that one keeps its own native active-state styling (blue
+// background, white label), but its icon didn't turn white to match,
+// making it invisible against the blue. Scoped outside
+// .user-navigation-primary so it covers both.
+.nav-pills li a.active .d-icon,
+.nav-pills .active .d-icon {
+  color: #fff !important;
+}
+
 .user-content {
   background: var(--rp-panel);
   border: 1px solid var(--rp-border);
