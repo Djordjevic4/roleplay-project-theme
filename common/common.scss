@@ -2247,8 +2247,8 @@ section.about {
 
 .rp-profile-group-icon {
   flex: 0 0 auto;
-  width: 32px;
-  height: 32px;
+  width: 20px;
+  height: 20px;
 
   // The relocated .avatar-flair keeps its own inline background-image
   // (the group's real flair, moved here rather than duplicated) but
@@ -2262,8 +2262,8 @@ section.about {
     left: auto !important;
     right: auto !important;
     bottom: auto !important;
-    width: 32px !important;
-    height: 32px !important;
+    width: 20px !important;
+    height: 20px !important;
     border-radius: 50%;
   }
 }
