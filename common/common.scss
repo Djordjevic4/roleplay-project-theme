@@ -2132,13 +2132,12 @@ section.about {
       background: var(--rp-panel);
     }
 
+    // The group flair icon is relocated (moved, not duplicated) into
+    // the sidebar's Group card by rp-user-profile.js — hidden here
+    // only as a fallback for the moment before that move happens, so
+    // it never flashes on the avatar first.
     .avatar-flair {
-      top: auto !important;
-      left: auto !important;
-      right: -6px !important;
-      bottom: -6px !important;
-      width: 30px !important;
-      height: 30px !important;
+      display: none;
     }
   }
 
@@ -2238,6 +2237,40 @@ section.about {
   color: var(--rp-blue);
   font-size: 1.1em;
   letter-spacing: normal;
+}
+
+.rp-profile-group-body {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.rp-profile-group-icon {
+  flex: 0 0 auto;
+  width: 32px;
+  height: 32px;
+
+  // The relocated .avatar-flair keeps its own inline background-image
+  // (the group's real flair, moved here rather than duplicated) but
+  // Discourse's own default styling for it assumes it's still
+  // absolutely positioned over an avatar — neutralized so it renders
+  // as a plain small icon here instead.
+  .avatar-flair {
+    display: block !important;
+    position: static !important;
+    top: auto !important;
+    left: auto !important;
+    right: auto !important;
+    bottom: auto !important;
+    width: 32px !important;
+    height: 32px !important;
+    border-radius: 50%;
+  }
+}
+
+.rp-profile-group-name {
+  font-weight: 700;
+  color: var(--rp-text);
 }
 
 .rp-trust-name {

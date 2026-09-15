@@ -40,6 +40,18 @@ function usernameFromUrl() {
   return match ? decodeURIComponent(match[1]) : null;
 }
 
+// "head_administrator" -> "Head Administrator" — same technique used
+// for the per-post group title in rp-post-layout.js, deliberately
+// reading the user's real primary_group_name (a group slug) rather
+// than user_title, which is free text an admin can set to anything.
+function humanizeGroupName(slug) {
+  return slug
+    .split(/[_-]+/)
+    .filter(Boolean)
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+    .join(" ");
+}
+
 // Same sprite-reference technique used everywhere else in this theme
 // (rp-category-cards.js, rp-post-layout.js) — no icon library import.
 function iconSvg(name) {
@@ -101,6 +113,7 @@ function badgeImageHtml(badge) {
 }
 
 function sidebarHtml(data, username) {
+  const groupName = data.user?.primary_group_name ? humanizeGroupName(data.user.primary_group_name) : "";
   const level = data.user?.trust_level ?? 0;
   const levelName = TRUST_LEVEL_NAMES[level] ?? "New";
   const dots = [0, 1, 2, 3, 4]
@@ -130,6 +143,13 @@ function sidebarHtml(data, username) {
     .join("");
 
   return `
+    <div class="rp-profile-card rp-profile-group"${groupName ? "" : " hidden"}>
+      <div class="rp-profile-card-title">Group</div>
+      <div class="rp-profile-group-body">
+        <span class="rp-profile-group-icon"></span>
+        <span class="rp-profile-group-name">${escapeHtml(groupName)}</span>
+      </div>
+    </div>
     <div class="rp-profile-card rp-profile-trust">
       <div class="rp-profile-card-title">Trust Level</div>
       <div class="rp-trust-name">${escapeHtml(levelName)}</div>
@@ -240,6 +260,24 @@ export default apiInitializer((api) => {
     }
   }
 
+  // The real .avatar-flair element (the group icon Discourse already
+  // renders on the avatar) is moved — not cloned — into the new Group
+  // card above Trust Level, per request: keep the real icon, just show
+  // it there instead of overlapping the avatar. Re-checked every
+  // render() call for the same reason as relocateBio/restructureHeader
+  // (Expand can recreate the avatar).
+  function relocateGroupFlair(sidebar) {
+    const slot = sidebar?.querySelector(".rp-profile-group-icon");
+    if (!slot) {
+      return;
+    }
+    const flair = document.querySelector(".user-profile-avatar .avatar-flair");
+    if (flair && flair.parentElement !== slot) {
+      slot.innerHTML = "";
+      slot.appendChild(flair);
+    }
+  }
+
   function populateSidebar(sidebar, username) {
     if (!sidebar || sidebar.dataset.rpUsername === username) {
       return;
@@ -274,6 +312,7 @@ export default apiInitializer((api) => {
     const sidebar = ensureLayout();
     populateSidebar(sidebar, username);
     relocateBio(sidebar);
+    relocateGroupFlair(sidebar);
   }
 
   api.onPageChange(() => {
