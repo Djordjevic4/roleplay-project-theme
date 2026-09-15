@@ -1638,12 +1638,14 @@ input.title-input {
     }
 
     .avatar-flair {
+      // Half in, half out of the avatar's corner: offsetting by
+      // exactly -(size / 2) centers the badge ON the corner itself.
       top: auto !important;
       left: auto !important;
-      right: -4px !important;
-      bottom: -4px !important;
-      width: 28px !important;
-      height: 28px !important;
+      right: -17px !important;
+      bottom: -17px !important;
+      width: 34px !important;
+      height: 34px !important;
     }
   }
 
