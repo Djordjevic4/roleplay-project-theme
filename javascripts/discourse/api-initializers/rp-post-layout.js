@@ -73,11 +73,6 @@ function enhancePost(article) {
 
   avatarCol.appendChild(wrap);
 
-  // The "..." (show more actions) trigger is hidden entirely via CSS
-  // now (button.more-actions), with all post controls forced visible
-  // instead — see common.scss — so no reparenting is needed here
-  // anymore.
-
   const username = namesEl.querySelector("a")?.textContent?.trim();
   if (!username) {
     return;
@@ -101,9 +96,32 @@ function enhancePost(article) {
   });
 }
 
+// Discourse only renders flag/bookmark/delete/etc. into the DOM once
+// the "..." (button.more-actions) trigger is actually clicked — it's
+// not just CSS-hidden behind it. Since common.scss hides that trigger
+// so it's never visible, we click it here programmatically (a
+// synthetic .click() fires the same handler a real click would,
+// regardless of the button's CSS display) so those actions get
+// rendered and can then be forced always-visible via CSS. Confirmed
+// class name from a live install: button.more-actions.
+function expandPostActions(article) {
+  if (article.dataset.rpActionsExpanded) {
+    return;
+  }
+  const trigger = article.querySelector("button.more-actions, .show-more-actions");
+  if (!trigger) {
+    return;
+  }
+  article.dataset.rpActionsExpanded = "true";
+  trigger.click();
+}
+
 export default apiInitializer((api) => {
   function enhanceAll() {
-    document.querySelectorAll(".topic-post").forEach(enhancePost);
+    document.querySelectorAll(".topic-post").forEach((article) => {
+      enhancePost(article);
+      expandPostActions(article);
+    });
   }
 
   api.onPageChange(() => {
