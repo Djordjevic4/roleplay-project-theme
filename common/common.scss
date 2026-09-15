@@ -43,6 +43,18 @@
   --tertiary: #{$primary_color};
   --tertiary-low: #1c2c47;
   --tertiary-medium: #{$primary_color_hover};
+
+  // Discourse's core CSS builds some translucent overlays with
+  // rgba(var(--x-rgb), alpha) rather than the hex custom properties
+  // above — confirmed live: the profile header's cover photo was
+  // being hidden by a rgba(255, 255, 255, 0.8) overlay because
+  // --secondary-rgb was still the default light scheme's white
+  // (255, 255, 255), even though --secondary itself was already
+  // overridden to our dark color above. Comma-separated R, G, B to
+  // match Discourse's own format for these.
+  --primary-rgb: 244, 246, 248;
+  --secondary-rgb: 11, 14, 19;
+  --tertiary-rgb: #{red($primary_color)}, #{green($primary_color)}, #{blue($primary_color)};
   --quaternary: #{$primary_color};
   --header_background: #0b0e13;
   --header_primary: #f4f6f8;
@@ -2011,13 +2023,13 @@ button.more-actions,
   padding: 0;
 
   .details {
-    // Discourse's own opaque light background on this element was
-    // sitting on top of and completely hiding our cover gradient (or
-    // the real uploaded cover photo when a user has one) — confirmed
-    // by comparing the collapsed vs. expanded state, where the same
-    // cover only became visible once expansion changed this element's
-    // styling.
-    background: transparent;
+    // Discourse applies its own readability scrim here as
+    // rgba(var(--secondary-rgb), 0.8) — that's real, intentional
+    // behavior (dims a cover photo so the name/avatar stay readable),
+    // not something to strip out. It was rendering solid white
+    // because --secondary-rgb wasn't overridden (see the :root block
+    // above); now that it resolves to our dark color, this scrim looks
+    // correct on its own without touching its background here.
     display: flex;
     align-items: flex-end;
     min-height: 170px;
