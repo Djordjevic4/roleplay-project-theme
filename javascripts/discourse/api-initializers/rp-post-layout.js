@@ -135,15 +135,21 @@ function enhancePost(article) {
     if (!stats || statsEl.isConnected === false) {
       return;
     }
+    // Icon + number only, no trailing "posts"/"likes" word — matches
+    // the reference design exactly. "comments" is used for the post
+    // count instead of "message" because "message" isn't in
+    // Discourse's preloaded icon sprite on this install (it silently
+    // rendered nothing), while "comments" is already confirmed working
+    // elsewhere in this theme (the FORUMS nav item).
     const parts = [];
     if (stats.postCount != null) {
       parts.push(
-        `<div class="rp-post-stat">${iconSvg("message")}<span class="rp-post-stat-value">${stats.postCount}</span> posts</div>`
+        `<div class="rp-post-stat">${iconSvg("comments")}<span class="rp-post-stat-value">${stats.postCount}</span></div>`
       );
     }
     if (stats.likesReceived != null) {
       parts.push(
-        `<div class="rp-post-stat">${iconSvg("heart")}<span class="rp-post-stat-value">${stats.likesReceived}</span> likes</div>`
+        `<div class="rp-post-stat">${iconSvg("heart")}<span class="rp-post-stat-value">${stats.likesReceived}</span></div>`
       );
     }
     statsEl.innerHTML = parts.join("");
