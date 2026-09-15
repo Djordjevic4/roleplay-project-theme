@@ -1524,17 +1524,21 @@ input.title-input {
 // -----------------------------------------------------------------
 .topic-post {
   margin-bottom: var(--rp-gap);
+  width: 100%;
 
   article.boxed {
     background: transparent;
     border: none;
     padding: 0;
+    width: 100%;
   }
 
   > div,
   .row {
     display: flex;
     align-items: stretch;
+    width: 100%;
+    box-sizing: border-box;
   }
 
   .row {
@@ -1542,38 +1546,85 @@ input.title-input {
     border: 1px solid var(--rp-border);
     border-radius: var(--rp-radius-md);
     overflow: hidden;
+    max-width: none;
   }
 
+  // Fixed-width left author panel, stretched to the row's full height
+  // (align-items: stretch on .row above) so the divider line always
+  // runs from top to bottom regardless of how tall the post content is.
   .topic-avatar {
     flex: 0 0 190px;
     width: 190px;
+    height: 100%;
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: 20px 14px;
-    border-right: 1px solid var(--rp-border);
+    justify-content: flex-start;
+    padding: 24px 14px;
+    border-right: 1px solid #23272e;
     background: var(--rp-panel-header);
     text-align: center;
+    box-sizing: border-box;
 
     .post-avatar {
-      margin: 0 0 10px;
+      margin: 0 0 12px;
     }
 
     img.avatar {
-      width: 90px !important;
-      height: 90px !important;
-      border-radius: var(--rp-radius-md);
+      width: 130px !important;
+      height: 130px !important;
+      border-radius: 8px;
     }
   }
 
+  // Content column: a top bar (date + post controls), the post body,
+  // and a bottom bar (reactions/like) — each own their own padding
+  // instead of one uniform block, so the bars can span edge-to-edge
+  // with dividers while the body text gets its own inset.
   .topic-body {
     flex: 1 1 auto;
     min-width: 0;
+    display: flex;
+    flex-direction: column;
+    padding: 0;
+  }
+
+  // Native post-infos (post date, whisper/wiki icons, etc.) restyled
+  // into a top bar. Discourse's "..." show-more-actions trigger lives
+  // in the bottom .post-menu-area by default, not here — if the
+  // reference needs it specifically at top-right next to the date,
+  // that requires moving it via JS rather than pure CSS (elements
+  // can only be reordered by CSS within their existing parent, not
+  // relocated into a different one) — flag it and we'll add that.
+  .post-infos {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    padding: 10px 16px;
+    margin: 0;
+    border-bottom: 1px solid var(--rp-border);
+    color: var(--rp-text-muted);
+    font-size: 0.8em;
+  }
+
+  .regular.contents,
+  .cooked {
     padding: 16px 20px;
   }
 
-  .post-infos {
-    color: var(--rp-text-muted);
+  // Bottom action bar (like/reply/share/etc.) — pushed to the right so
+  // the like/reaction control lands in the bottom-right corner.
+  .post-menu-area {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 6px;
+    width: 100%;
+    padding: 10px 16px;
+    margin: 0;
+    border-top: 1px solid var(--rp-border);
+    margin-top: auto;
   }
 }
 
@@ -1592,7 +1643,7 @@ input.title-input {
       font-weight: 700;
       color: var(--rp-text);
       text-decoration: none;
-      font-size: 0.95em;
+      font-size: 15px;
     }
   }
 
@@ -1600,7 +1651,7 @@ input.title-input {
     color: var(--rp-red);
     font-size: 0.78em;
     font-weight: 700;
-    margin-top: 3px;
+    margin-top: 4px;
   }
 }
 
@@ -1611,9 +1662,21 @@ input.title-input {
   width: 100%;
   display: flex;
   flex-direction: column;
+  align-items: center;
   gap: 4px;
   font-size: 0.76em;
   color: var(--rp-text-muted);
+
+  .rp-post-stat {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+
+  .rp-post-stat-icon {
+    color: var(--rp-text-muted);
+    font-size: 0.9em;
+  }
 
   .rp-post-stat-value {
     color: var(--rp-text);

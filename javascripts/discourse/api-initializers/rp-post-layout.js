@@ -13,6 +13,13 @@ import { apiInitializer } from "discourse/lib/api";
 // simply left blank rather than showing a fake number.
 // ---------------------------------------------------------------
 
+// Same technique used for category badges in rp-category-cards.js:
+// reference the icon sprite Discourse already loads on every page,
+// rather than importing an icon-library module.
+function iconSvg(name) {
+  return `<svg class="fa d-icon d-icon-${name} svg-icon fa-width-auto svg-string rp-post-stat-icon" width="1em" height="1em" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><use href="#${name}"></use></svg>`;
+}
+
 const statsCache = new Map();
 
 function fetchUserStats(username) {
@@ -77,12 +84,12 @@ function enhancePost(article) {
     const parts = [];
     if (stats.postCount != null) {
       parts.push(
-        `<div class="rp-post-stat"><span class="rp-post-stat-value">${stats.postCount}</span> posts</div>`
+        `<div class="rp-post-stat">${iconSvg("message")}<span class="rp-post-stat-value">${stats.postCount}</span> posts</div>`
       );
     }
     if (stats.likesReceived != null) {
       parts.push(
-        `<div class="rp-post-stat"><span class="rp-post-stat-value">${stats.likesReceived}</span> likes</div>`
+        `<div class="rp-post-stat">${iconSvg("heart")}<span class="rp-post-stat-value">${stats.likesReceived}</span> likes</div>`
       );
     }
     statsEl.innerHTML = parts.join("");
