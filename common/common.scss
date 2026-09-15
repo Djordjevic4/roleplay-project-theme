@@ -2024,17 +2024,6 @@ button.more-actions,
     padding: 0 24px;
   }
 
-  // The native "Expand" toggle reveals a second, unstyled detail row
-  // (Joined/Last Post/Seen/Trust Level/Email/Groups) that both
-  // duplicates and looks far worse than the quickinfo line + sidebar
-  // cards this theme already builds from the same real data — and
-  // needlessly exposes the account's email on the profile page. Hidden
-  // outright rather than styled, since nothing in it isn't already
-  // shown better elsewhere on this page.
-  .user-profile-toggle-btn {
-    display: none;
-  }
-
   .primary {
     display: flex;
     align-items: flex-end;
