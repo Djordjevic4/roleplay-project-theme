@@ -2068,11 +2068,14 @@ section.about {
   }
 
   // Moved here from inside .primary by rp-user-profile.js so it can
-  // be pinned to the cover's own corner, independent of anything
-  // happening in the avatar/name row below it.
+  // be pinned independently of anything happening in the avatar/name
+  // row. Anchored from the bottom (not the top) of the cover so it
+  // lines up level with the username/name row, which itself sits at
+  // the bottom of the cover — requested explicitly instead of sitting
+  // up near the very top corner.
   > .controls {
     position: absolute;
-    top: 16px;
+    bottom: 16px;
     right: 16px;
     z-index: 2;
 
