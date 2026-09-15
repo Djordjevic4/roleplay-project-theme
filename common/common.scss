@@ -54,7 +54,6 @@
   // match Discourse's own format for these.
   --primary-rgb: 244, 246, 248;
   --secondary-rgb: 11, 14, 19;
-  --tertiary-rgb: #{red($primary_color)}, #{green($primary_color)}, #{blue($primary_color)};
   --quaternary: #{$primary_color};
   --header_background: #0b0e13;
   --header_primary: #f4f6f8;
