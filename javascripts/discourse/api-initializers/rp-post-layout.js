@@ -184,22 +184,19 @@ function enhancePost(article) {
   });
 }
 
-// CSS align-items: stretch on .row was measured (via getBoundingClientRect
-// on a live install) to NOT be reliably stretching .topic-avatar to the
-// row's full height. Rather than keep chasing that in CSS, this
-// measures .topic-body's actual rendered height in JS and sets it as
-// .topic-avatar's height, so the avatar column (and its border-right
-// divider) always spans the true full height of the card.
+// .row uses align-items: flex-start (see common.scss), NOT stretch —
+// with stretch, .topic-body's rendered height gets pulled up to match
+// whatever .topic-avatar's height is, which this function sets based
+// on measuring .topic-body: a circular dependency that caused an
+// unbounded-growth feedback loop (each measurement was already
+// inflated by the previous write). With flex-start, both columns are
+// independent, so it's safe to observe .topic-body and write to
+// .topic-avatar without ever re-triggering the observer.
 //
-// IMPORTANT: this must observe .topic-body, NOT .row or .topic-avatar
-// itself. An earlier version observed .row and wrote to .topic-avatar,
-// which is a child of .row — growing the avatar can grow .row itself
-// (its height being derived from its tallest child), which re-fires
-// the observer on .row, which grows the avatar again, and so on: a
-// classic ResizeObserver feedback loop, which is exactly what made
-// the divider line grow without bound. .topic-body's own height is
-// driven purely by its own text content and is never affected by
-// .topic-avatar's height, so observing it can't create that loop.
+// The target height is the larger of .topic-body's natural height and
+// .topic-avatar's own natural content height (120px avatar + name +
+// stats) — measured with any previous forced height temporarily
+// cleared — so a short post's text never clips the avatar block.
 function syncAvatarHeight(article) {
   const topicBody = article.querySelector(".topic-body");
   const avatarCol = article.querySelector(".topic-avatar");
@@ -207,7 +204,9 @@ function syncAvatarHeight(article) {
     return;
   }
   const sync = () => {
-    const target = topicBody.offsetHeight;
+    avatarCol.style.height = "";
+    const avatarNatural = avatarCol.scrollHeight;
+    const target = Math.max(topicBody.offsetHeight, avatarNatural);
     if (Math.abs(target - avatarCol.offsetHeight) > 1) {
       avatarCol.style.height = `${target}px`;
     }
