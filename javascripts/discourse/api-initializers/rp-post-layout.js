@@ -20,6 +20,49 @@ function iconSvg(name) {
   return `<svg class="fa d-icon d-icon-${name} svg-icon fa-width-auto svg-string rp-post-stat-icon" width="1em" height="1em" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><use href="#${name}"></use></svg>`;
 }
 
+// "head_administrator" -> "Head Administrator"
+function humanizeGroupName(slug) {
+  return slug
+    .split(/[_-]+/)
+    .filter(Boolean)
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+    .join(" ");
+}
+
+function currentTopicIdFromUrl() {
+  const match = window.location.pathname.match(/^\/t\/[^/]+\/(\d+)/);
+  return match ? parseInt(match[1], 10) : null;
+}
+
+// Confirmed via a live install's /t/{id}.json response: each post in
+// post_stream carries the poster's real primary_group_name (a group
+// slug, e.g. "head_administrator") — deliberately used instead of
+// user_title, which is free-text an admin can set to anything and
+// isn't necessarily tied to the user's actual group membership.
+const groupNameCache = new Map();
+
+function fetchTopicGroupNames(topicId) {
+  if (groupNameCache.has(topicId)) {
+    return groupNameCache.get(topicId);
+  }
+  const promise = fetch(`/t/${topicId}.json`, {
+    headers: { Accept: "application/json" },
+  })
+    .then((r) => (r.ok ? r.json() : null))
+    .then((d) => {
+      const map = new Map();
+      (d?.post_stream?.posts || []).forEach((p) => {
+        if (p.username && p.primary_group_name && !map.has(p.username)) {
+          map.set(p.username, humanizeGroupName(p.primary_group_name));
+        }
+      });
+      return map;
+    })
+    .catch(() => new Map());
+  groupNameCache.set(topicId, promise);
+  return promise;
+}
+
 const statsCache = new Map();
 
 function fetchUserStats(username) {
@@ -59,13 +102,13 @@ function enhancePost(article) {
   const wrap = document.createElement("div");
   wrap.className = "rp-post-user-info";
 
-  // Move the real elements (not a text clone) so username-click /
-  // hover-card behavior keeps working exactly as before.
+  // Move the real .names element (not a text clone) so username-click
+  // / hover-card behavior keeps working exactly as before.
   wrap.appendChild(namesEl);
-  const titleEl = article.querySelector(".user-title");
-  if (titleEl) {
-    wrap.appendChild(titleEl);
-  }
+
+  const groupTitleEl = document.createElement("div");
+  groupTitleEl.className = "rp-post-group-title";
+  wrap.appendChild(groupTitleEl);
 
   const statsEl = document.createElement("div");
   statsEl.className = "rp-post-user-stats";
@@ -77,6 +120,17 @@ function enhancePost(article) {
   if (!username) {
     return;
   }
+
+  const topicId = currentTopicIdFromUrl();
+  if (topicId) {
+    fetchTopicGroupNames(topicId).then((map) => {
+      const groupName = map.get(username);
+      if (groupName && groupTitleEl.isConnected) {
+        groupTitleEl.textContent = groupName;
+      }
+    });
+  }
+
   fetchUserStats(username).then((stats) => {
     if (!stats || statsEl.isConnected === false) {
       return;

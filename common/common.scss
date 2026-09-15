@@ -1674,13 +1674,22 @@ input.title-input {
     }
   }
 
-  .user-title,
-  .primary-group-name {
+  // Populated by rp-post-layout.js from each post's real
+  // primary_group_name (confirmed via /t/{id}.json) — deliberately
+  // not Discourse's free-text .user-title, which an admin can set to
+  // anything regardless of actual group membership.
+  .rp-post-group-title {
     color: #e74c3c;
     font-size: 12px;
     font-weight: 700;
     text-transform: uppercase;
     margin-top: 4px;
+    min-height: 1px; // avoid a layout jump once the async fetch fills it in
+
+    &:empty {
+      margin-top: 0;
+      min-height: 0;
+    }
   }
 }
 
