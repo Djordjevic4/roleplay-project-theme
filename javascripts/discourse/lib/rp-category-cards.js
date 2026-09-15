@@ -42,7 +42,14 @@ export function avatarHtml(avatarTemplate, size) {
 }
 
 export async function fetchJSON(url) {
-  const res = await fetch(url, { headers: { Accept: "application/json" } });
+  // cache: "no-store" so a category's latest-topic lookup can never
+  // serve a stale browser-cached response from before a new topic was
+  // created (reported as a real category with a real topic still
+  // showing "No topics yet" on the Forums index).
+  const res = await fetch(url, {
+    headers: { Accept: "application/json" },
+    cache: "no-store",
+  });
   if (!res.ok) {
     throw new Error(`HTTP ${res.status} for ${url}`);
   }
