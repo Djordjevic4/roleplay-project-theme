@@ -129,6 +129,58 @@ export async function fetchGlobalLatestTopics() {
   return map;
 }
 
+// Discourse's own `post_count` field on a category (from
+// site.categories / /c/{id}/show.json) turned out not to be a
+// reliable "total posts in this category" number in practice — it's a
+// counter column that isn't always kept in sync in real time. The user
+// wants a literal count: every topic-starting post PLUS every reply,
+// across every topic in the category. The only way to get a genuinely
+// fresh, correct number is to walk the category's own topic list (which
+// Discourse paginates via topic_list.more_topics_url) and sum each
+// topic's own posts_count (a Topic field that DOES include the OP —
+// confirmed reliable, since it's what Discourse itself uses to render
+// the "replies" column). Capped at a generous number of pages so one
+// huge category can't turn into an unbounded fetch loop, and cached
+// briefly per category so re-rendering (e.g. navigating back and forth)
+// doesn't re-walk the whole category every time.
+const postCountCache = new Map(); // categoryId -> { total, ts }
+const POST_COUNT_CACHE_MS = 3 * 60 * 1000;
+const POST_COUNT_MAX_PAGES = 25;
+
+export async function fetchCategoryPostCount(categoryId) {
+  const cached = postCountCache.get(categoryId);
+  if (cached && Date.now() - cached.ts < POST_COUNT_CACHE_MS) {
+    return cached.total;
+  }
+
+  let total = 0;
+  let url = `/c/${categoryId}.json`;
+  let pages = 0;
+
+  try {
+    while (url && pages < POST_COUNT_MAX_PAGES) {
+      const data = await fetchJSON(url);
+      const topics = data.topic_list?.topics || [];
+      topics.forEach((topic) => {
+        // posts_count includes the topic's own first post, plus every
+        // reply — exactly "every single post" the user asked for.
+        total += topic.posts_count ?? 1;
+      });
+      url = data.topic_list?.more_topics_url || null;
+      pages += 1;
+      if (!topics.length) {
+        break;
+      }
+    }
+    postCountCache.set(categoryId, { total, ts: Date.now() });
+    return total;
+  } catch (e) {
+    // Keep serving a stale cached value rather than flashing to 0 if a
+    // later refresh fails (e.g. rate limiting mid-pagination).
+    return cached ? cached.total : null;
+  }
+}
+
 // Runs `fn` over `items` with at most `limit` requests in flight at
 // once, instead of firing every request simultaneously (Promise.all)
 // — the likely trigger for the rate-limiting above.
@@ -249,7 +301,7 @@ export function rowHtml(cat) {
         </span>
       </a>
       <span class="rp-cat-count">
-        <span class="rp-cat-count-number">${cat.post_count ?? cat.topic_count ?? 0}</span>
+        <span class="rp-cat-count-number">${cat.rpPostCount ?? cat.post_count ?? cat.topic_count ?? 0}</span>
         posts
       </span>
       ${latestHtml}

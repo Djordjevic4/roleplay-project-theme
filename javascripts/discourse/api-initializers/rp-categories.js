@@ -1,5 +1,6 @@
 import { apiInitializer } from "discourse/lib/api";
 import {
+  fetchCategoryPostCount,
   fetchGlobalLatestTopics,
   getSiteCategories,
   loadLatestTopic,
@@ -30,15 +31,21 @@ async function loadCategoryData(api) {
   // fall back to the slower per-category lookup, at most 4 at a time.
   const globalLatest = await fetchGlobalLatestTopics();
   const missing = categories.filter((cat) => !globalLatest.has(cat.id));
-  const fallbackLatest = await mapWithConcurrency(missing, 4, async (cat) => [
-    cat.id,
-    await loadLatestTopic(cat.id),
+
+  // Latest-topic-per-category (fast, batched) and true post totals
+  // (one topic-list walk per category, so slower) are independent and
+  // fetched in parallel rather than one after the other.
+  const [fallbackLatest, postCounts] = await Promise.all([
+    mapWithConcurrency(missing, 4, async (cat) => [cat.id, await loadLatestTopic(cat.id)]),
+    mapWithConcurrency(categories, 4, async (cat) => [cat.id, await fetchCategoryPostCount(cat.id)]),
   ]);
   const fallbackMap = new Map(fallbackLatest);
+  const postCountMap = new Map(postCounts);
 
   return categories.map((cat) => ({
     ...cat,
     rpLatest: globalLatest.get(cat.id) ?? fallbackMap.get(cat.id) ?? null,
+    rpPostCount: postCountMap.get(cat.id),
   }));
 }
 

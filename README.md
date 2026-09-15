@@ -68,6 +68,16 @@ individual `/c/{id}.json` lookup (with a retry), a handful of requests at
 most rather than one per category. If everything fails, the native list is
 shown again untouched rather than leaving a blank page.
 
+The "N posts" number on each card is **not** read from the category's own
+`post_count` field — that turned out not to be reliably in sync with real
+totals. Instead, `fetchCategoryPostCount()` walks that category's topic
+list (following Discourse's own pagination) and sums each topic's
+`posts_count` (which already includes that topic's first post, plus every
+reply), so the number shown is a true count of every single post in the
+category. This is more expensive than the latest-topic lookup (one topic-
+list walk per category instead of one shared request), so it's concurrency-
+limited the same way and cached in memory for 3 minutes per category.
+
 ### Recommended category setup (to match the screenshots exactly)
 
 - Create parent categories **Announcements** and **Community** (no need to

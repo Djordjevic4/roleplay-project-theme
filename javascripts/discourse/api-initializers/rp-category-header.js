@@ -1,6 +1,7 @@
 import { apiInitializer } from "discourse/lib/api";
 import {
   escapeHtml,
+  fetchCategoryPostCount,
   fetchGlobalLatestTopics,
   getSiteCategories,
   loadLatestTopic,
@@ -99,14 +100,16 @@ export default apiInitializer((api) => {
 
     const globalLatest = await fetchGlobalLatestTopics();
     const missing = children.filter((c) => !globalLatest.has(c.id));
-    const fallbackLatest = await mapWithConcurrency(missing, 4, async (c) => [
-      c.id,
-      await loadLatestTopic(c.id),
+    const [fallbackLatest, postCounts] = await Promise.all([
+      mapWithConcurrency(missing, 4, async (c) => [c.id, await loadLatestTopic(c.id)]),
+      mapWithConcurrency(children, 4, async (c) => [c.id, await fetchCategoryPostCount(c.id)]),
     ]);
     const fallbackMap = new Map(fallbackLatest);
+    const postCountMap = new Map(postCounts);
     const withLatest = children.map((c) => ({
       ...c,
       rpLatest: globalLatest.get(c.id) ?? fallbackMap.get(c.id) ?? null,
+      rpPostCount: postCountMap.get(c.id),
     }));
     if (myToken !== renderToken) {
       return; // navigated away while fetching
