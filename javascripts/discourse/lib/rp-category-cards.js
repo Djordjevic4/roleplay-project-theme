@@ -60,6 +60,47 @@ function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
+// Discourse's own cached counters (Category#post_count,
+// UserStat#post_count from /u/{username}/summary.json) both turned out
+// to be unreliable in practice — confirmed live on this install, a
+// user with 1 topic + 5 real replies still showed post_count: 2. The
+// fix that worked: count real UserAction rows instead of trusting a
+// cached column. /user_actions.json accepts a comma-separated `filter`
+// of action types (confirmed live) — 4 = started a topic, 5 = replied,
+// 2 = was_liked — so this paginates through it and returns a literal
+// count of matching rows, with a retry on failure. Shared by the post
+// stat boxes (rp-post-layout.js) and the user profile page
+// (rp-user-profile.js) so both use the exact same real-count logic.
+const USER_ACTIONS_MAX_PAGES = 20;
+
+export async function countUserActions(username, filterCodes, attempt = 0) {
+  let total = 0;
+  let offset = 0;
+  let pages = 0;
+
+  try {
+    while (pages < USER_ACTIONS_MAX_PAGES) {
+      const data = await fetchJSON(
+        `/user_actions.json?username=${encodeURIComponent(username)}&filter=${filterCodes}&offset=${offset}`
+      );
+      const actions = data.user_actions || [];
+      total += actions.length;
+      if (!actions.length) {
+        break;
+      }
+      offset += actions.length;
+      pages += 1;
+    }
+    return total;
+  } catch (e) {
+    if (attempt < 1) {
+      await sleep(400 + Math.random() * 400);
+      return countUserActions(username, filterCodes, attempt + 1);
+    }
+    return null;
+  }
+}
+
 // Fetches recent activity across the WHOLE site in one request and
 // groups it by category, instead of one request per category — much
 // faster (1 request instead of N) and effectively immune to Discourse's

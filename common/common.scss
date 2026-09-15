@@ -1996,9 +1996,363 @@ button.more-actions,
   }
 }
 
+// -----------------------------------------------------------------
+// User profile (IPB-style cover header + sidebar). Confirmed real
+// classes via a live install's DOM dump — see rp-user-profile.js for
+// the JS side (moving .controls, building the sidebar from real
+// fetched data).
+// -----------------------------------------------------------------
+.collapsed-info.about {
+  position: relative;
+  border-radius: var(--rp-radius-md);
+  overflow: visible;
+  background: linear-gradient(135deg, #16233a 0%, var(--rp-bg) 70%);
+  margin-bottom: 56px;
+  padding: 0;
+
+  .details {
+    display: flex;
+    align-items: flex-end;
+    min-height: 170px;
+    padding: 0 24px;
+  }
+
+  .primary {
+    display: flex;
+    align-items: flex-end;
+    flex-wrap: wrap;
+    gap: 20px;
+    width: 100%;
+    // Shifts the avatar+name row down past the cover's own bottom
+    // edge, so the avatar visually "hangs" half in / half out of the
+    // cover — the classic overlapping-avatar profile look. overflow:
+    // visible above (not hidden) is what lets this actually show
+    // instead of being clipped.
+    transform: translateY(40px);
+    padding-bottom: 12px;
+  }
+
+  // Moved here from inside .primary by rp-user-profile.js so it can
+  // be pinned to the cover's own corner, independent of the avatar
+  // row's translateY shift above.
+  > .controls {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    z-index: 2;
+
+    ul {
+      display: flex;
+      gap: 8px;
+      list-style: none;
+      margin: 0;
+      padding: 0;
+    }
+
+    .btn {
+      background: var(--rp-panel);
+      border: 1px solid var(--rp-border);
+      color: var(--rp-text);
+
+      &:hover {
+        background: var(--rp-panel-header);
+      }
+    }
+
+    .user-admin {
+      background: var(--rp-blue);
+      border-color: var(--rp-blue);
+      color: #fff;
+
+      &:hover {
+        background: var(--rp-blue-hover);
+        border-color: var(--rp-blue-hover);
+      }
+    }
+  }
+
+  .user-profile-avatar {
+    position: relative;
+    flex: 0 0 auto;
+
+    img.avatar {
+      width: 120px !important;
+      height: 120px !important;
+      border-radius: 8px;
+      border: 4px solid var(--rp-bg);
+      background: var(--rp-panel);
+    }
+
+    .avatar-flair {
+      top: auto !important;
+      left: auto !important;
+      right: -6px !important;
+      bottom: -6px !important;
+      width: 30px !important;
+      height: 30px !important;
+    }
+  }
+
+  .primary-textual {
+    flex: 1 1 auto;
+    min-width: 0;
+    padding-bottom: 10px;
+
+    .user-profile-names {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .username {
+      font-size: 1.3em;
+      font-weight: 800;
+      color: var(--rp-text);
+    }
+
+    .full-name {
+      color: var(--rp-text-muted);
+      font-size: 0.9em;
+    }
+
+    .location-and-website,
+    .bio {
+      color: var(--rp-text-muted);
+      font-size: 0.85em;
+      margin-top: 4px;
+    }
+
+    a {
+      color: inherit;
+    }
+  }
+
+  .rp-profile-quickinfo {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-top: 8px;
+    font-size: 0.82em;
+    color: var(--rp-text-muted);
+
+    strong {
+      color: var(--rp-text);
+      font-weight: 600;
+    }
+  }
+}
+
+// Two-column layout: sidebar cards + native tabs/content.
+.new-user-wrapper {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  gap: 20px;
+  align-items: start;
+}
+
+.rp-profile-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.rp-profile-card {
+  background: var(--rp-panel);
+  border: 1px solid var(--rp-border);
+  border-radius: var(--rp-radius-md);
+  padding: 16px;
+}
+
+.rp-profile-card-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.78em;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-weight: 700;
+  color: var(--rp-text-muted);
+  margin-bottom: 12px;
+}
+
+.rp-profile-card-link {
+  text-transform: none;
+  font-weight: 600;
+  color: var(--rp-blue);
+  font-size: 1.1em;
+  letter-spacing: normal;
+}
+
+.rp-trust-name {
+  font-size: 1.15em;
+  font-weight: 700;
+  color: var(--rp-text);
+  margin-bottom: 10px;
+}
+
+.rp-trust-dots {
+  display: flex;
+  gap: 6px;
+}
+
+.rp-trust-dot {
+  flex: 1 1 0;
+  height: 6px;
+  border-radius: 3px;
+  background: var(--rp-panel-header);
+  border: 1px solid var(--rp-border);
+
+  &.filled {
+    background: var(--rp-blue);
+    border-color: var(--rp-blue);
+  }
+}
+
+.rp-badge-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.rp-badge-item {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--rp-panel-header);
+  border: 1px solid var(--rp-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+
+  img {
+    width: 26px;
+    height: 26px;
+    object-fit: contain;
+  }
+
+  svg {
+    width: 18px;
+    height: 18px;
+    color: var(--rp-blue);
+  }
+
+  &:hover {
+    border-color: var(--rp-blue);
+  }
+}
+
+.rp-profile-empty {
+  color: var(--rp-text-muted);
+  font-size: 0.85em;
+}
+
+.rp-profile-stat-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.rp-profile-stat-list li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.88em;
+}
+
+.rp-profile-stat-label {
+  color: var(--rp-text-muted);
+}
+
+.rp-profile-stat-value {
+  color: var(--rp-text);
+  font-weight: 700;
+}
+
+.rp-profile-loading {
+  color: var(--rp-text-muted);
+  font-size: 0.85em;
+}
+
+// The native "STATS" block (days visited / read time / etc.) is
+// reproduced for real in the .rp-profile-stats sidebar card above —
+// hidden here rather than left duplicated on the Summary tab.
+.user-content .top-section.stats-section {
+  display: none;
+}
+
+.user-navigation-primary {
+  margin-bottom: 16px;
+
+  .nav-pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    list-style: none;
+    margin: 0;
+    padding: 0 0 12px;
+    border-bottom: 1px solid var(--rp-border);
+  }
+
+  .nav-pills li a {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 14px;
+    border-radius: 999px;
+    color: var(--rp-text-muted);
+    font-weight: 600;
+    font-size: 0.9em;
+    text-decoration: none;
+
+    &:hover {
+      background: var(--rp-panel-header);
+      color: var(--rp-text);
+    }
+
+    &.active {
+      background: var(--rp-blue);
+      color: #fff;
+    }
+  }
+}
+
+.user-content {
+  background: var(--rp-panel);
+  border: 1px solid var(--rp-border);
+  border-radius: var(--rp-radius-md);
+  padding: 20px;
+}
+
 @media (max-width: 767px) {
   :root {
     --rp-header-height: 64px;
+  }
+
+  .new-user-wrapper {
+    grid-template-columns: 1fr;
+  }
+
+  .collapsed-info.about {
+    .primary {
+      transform: translateY(24px);
+    }
+
+    .user-profile-avatar img.avatar {
+      width: 90px !important;
+      height: 90px !important;
+    }
+
+    > .controls {
+      position: static;
+      margin: 12px 0 0;
+      display: flex;
+      justify-content: flex-end;
+    }
   }
 
   .rp-header-nav {
