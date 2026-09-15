@@ -2028,7 +2028,11 @@ section.about {
   // The avatar hangs -40px below its row (see .user-profile-avatar
   // below) — this needs to clear that AND leave real breathing room
   // before the sidebar/tabs start, not just barely cover the overlap.
-  margin-bottom: 200px;
+  // Confirmed live that plain margin-bottom here was computing to 0px
+  // regardless of the value used (56px, 90px, even 200px) — something
+  // more specific in Discourse's own core CSS resets it, so this
+  // needs !important to actually take effect.
+  margin-bottom: 90px !important;
   padding: 0;
 
   // The native "Joined / Last Post / Seen / Trust Level / Email /
