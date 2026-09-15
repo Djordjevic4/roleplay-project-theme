@@ -1711,6 +1711,60 @@ input.title-input {
     padding: 8px 20px 44px;
     overflow: visible;
     overflow-x: hidden;
+
+    // Discourse's own quoted-post block ("Djordjevic: ...") had no
+    // theme override at all, so it was falling back to a hardcoded
+    // light background rather than any of our dark palette variables
+    // — reported as an unreadable white box. Styled to match the rest
+    // of the dark card instead.
+    aside.quote {
+      background: var(--rp-panel-header);
+      border: 1px solid var(--rp-border);
+      border-left: 4px solid var(--rp-blue-hover, var(--tertiary));
+      border-radius: var(--rp-radius-sm);
+      padding: 10px 14px;
+      margin: 10px 0;
+      color: var(--rp-text);
+
+      .title {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-weight: 700;
+        color: var(--rp-text);
+        margin-bottom: 6px;
+
+        img.avatar {
+          border-radius: 4px;
+        }
+
+        a {
+          color: var(--rp-text);
+          text-decoration: none;
+        }
+      }
+
+      .quote-controls {
+        float: right;
+        color: var(--rp-text-muted);
+
+        svg {
+          fill: currentColor;
+        }
+      }
+
+      blockquote {
+        margin: 0;
+        padding: 0;
+        border: none;
+        background: transparent;
+        color: var(--rp-text-muted);
+
+        p:last-child {
+          margin-bottom: 0;
+        }
+      }
+    }
   }
 
   // Bottom action bar (like/reply/share/etc.) — absolutely positioned
