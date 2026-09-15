@@ -2013,13 +2013,29 @@ button.more-actions,
 // the JS side (moving .controls, building the sidebar from real
 // fetched data).
 // -----------------------------------------------------------------
-.collapsed-info.about {
+// Discourse drops the "collapsed-info" class the moment the native
+// "Expand" toggle is clicked (confirmed live: className goes from
+// "about has-background" — no "collapsed-info" — once expanded), so
+// every rule below targets plain section.about instead: it's the one
+// class present in BOTH states, which is what was causing the cover
+// styling, avatar overlap and controls position to all break
+// specifically after clicking Expand.
+section.about {
   position: relative;
   border-radius: var(--rp-radius-md);
   overflow: visible;
   background: linear-gradient(135deg, #16233a 0%, var(--rp-bg) 70%);
   margin-bottom: 56px;
   padding: 0;
+
+  // The native "Joined / Last Post / Seen / Trust Level / Email /
+  // Groups" list that appears only when expanded — dropped rather
+  // than styled: it duplicates the quickinfo line + Trust Level card
+  // this theme already shows, and needlessly exposes the account
+  // email on the profile page.
+  .secondary {
+    display: none;
+  }
 
   .details {
     // Discourse applies its own readability scrim here as
@@ -2134,11 +2150,18 @@ button.more-actions,
       font-size: 0.9em;
     }
 
-    .location-and-website,
-    .bio {
+    .location-and-website {
       color: var(--rp-text-muted);
       font-size: 0.85em;
       margin-top: 4px;
+    }
+
+    // The real .bio element is physically moved into the sidebar's
+    // About card by rp-user-profile.js (relocateBio()) — hidden here
+    // only as a fallback in case that move hasn't happened yet on a
+    // given render pass, so it never flashes in the header first.
+    .bio {
+      display: none;
     }
 
     a {
@@ -2266,6 +2289,16 @@ button.more-actions,
   font-size: 0.85em;
 }
 
+.rp-profile-about-body {
+  color: var(--rp-text-muted);
+  font-size: 0.88em;
+  line-height: 1.5;
+
+  p {
+    margin: 0;
+  }
+}
+
 .rp-profile-stat-list {
   list-style: none;
   margin: 0;
@@ -2355,7 +2388,7 @@ button.more-actions,
     grid-template-columns: 1fr;
   }
 
-  .collapsed-info.about {
+  section.about {
     .primary {
       transform: translateY(24px);
     }

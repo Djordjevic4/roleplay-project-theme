@@ -3,17 +3,26 @@ import { countUserActions, escapeHtml, fetchJSON, relativeTime } from "../lib/rp
 
 // ---------------------------------------------------------------
 // User profile page (IPB-style): cover header with an overlapping
-// avatar, plus a left sidebar (Trust Level / Badges / Stats) beside
-// the native tabs + activity content. Confirmed via a live install's
-// DOM dump — real classes used throughout, no guessing:
-//   section.collapsed-info.about[.has-background]
+// avatar, plus a left sidebar (Trust Level / About / Badges / Stats)
+// beside the native tabs + activity content. Confirmed via a live
+// install's DOM dump — real classes used throughout, no guessing:
+//   section.about[.collapsed-info][.has-background]
 //     div.details > div.primary
 //       div.user-profile-avatar (img.avatar, div.avatar-flair)
 //       div.primary-textual (div.user-profile-names, .full-name, .bio)
+//       div.secondary (Joined/Last Post/Seen/Trust Level/Email/Groups —
+//         only present once "Expand" is clicked)
 //       section.controls (Admin button, Expand toggle)
 //   div.new-user-wrapper
 //     section.user-navigation.user-navigation-primary (the tabs)
 //     div.new-user-content-wrapper > div.user-content
+//
+// Confirmed live: clicking "Expand" removes the "collapsed-info" class
+// from section.about (and re-renders .primary, recreating .controls
+// inside it) — every selector here targets plain section.about rather
+// than section.collapsed-info.about, and restructureHeader()/
+// relocateBio() re-check and re-move their elements on every render()
+// call instead of running once, so both states keep working.
 //
 // IPB-only concepts that don't exist in Discourse (Warning Points,
 // numeric Reputation, Followers) are intentionally NOT recreated with
@@ -126,6 +135,10 @@ function sidebarHtml(data, username) {
       <div class="rp-trust-name">${escapeHtml(levelName)}</div>
       <div class="rp-trust-dots">${dots}</div>
     </div>
+    <div class="rp-profile-card rp-profile-about" hidden>
+      <div class="rp-profile-card-title">About</div>
+      <div class="rp-profile-about-body"></div>
+    </div>
     <div class="rp-profile-card rp-profile-badges">
       <div class="rp-profile-card-title">Badges <a class="rp-profile-card-link" href="/u/${escapeHtml(username)}/badges">View all</a></div>
       <div class="rp-badge-list">${badgeItems || '<div class="rp-profile-empty">No badges yet</div>'}</div>
@@ -171,13 +184,17 @@ export default apiInitializer((api) => {
   // Moves the real Admin/Expand controls out from beside the avatar so
   // they can be pinned to the cover's top-right corner independently
   // of the avatar row's own positioning (see common.scss) — a real
-  // native element, just relocated, not rebuilt.
+  // native element, just relocated, not rebuilt. Discourse re-renders
+  // .primary (and recreates a fresh .controls inside it) when the
+  // native "Expand" toggle is clicked, undoing this move — so there's
+  // no one-time "already done" guard here; the parentElement check
+  // already makes this a no-op once nothing needs moving, so it's
+  // cheap to just re-check on every render() call.
   function restructureHeader() {
-    const about = document.querySelector(".collapsed-info.about");
-    if (!about || about.dataset.rpProfileHeader) {
+    const about = document.querySelector("section.about");
+    if (!about) {
       return;
     }
-    about.dataset.rpProfileHeader = "true";
     const controls = about.querySelector(".primary > .controls");
     if (controls && controls.parentElement !== about) {
       about.appendChild(controls);
@@ -185,7 +202,7 @@ export default apiInitializer((api) => {
   }
 
   function addQuickInfo(username) {
-    const textual = document.querySelector(".collapsed-info.about .primary-textual");
+    const textual = document.querySelector("section.about .primary-textual");
     if (!textual || textual.querySelector(".rp-profile-quickinfo")) {
       return;
     }
@@ -198,6 +215,29 @@ export default apiInitializer((api) => {
         textual.insertAdjacentHTML("beforeend", html);
       }
     });
+  }
+
+  // The real .bio element (not a text copy, so any links/formatting in
+  // it keep working) gets physically moved into the sidebar's About
+  // card. Discourse can recreate .primary-textual (and with it, a
+  // fresh .bio) on route/expand changes, so — like restructureHeader —
+  // this just re-checks and re-moves each render() call instead of
+  // running once.
+  function relocateBio(sidebar) {
+    const slot = sidebar?.querySelector(".rp-profile-about-body");
+    if (!slot) {
+      return;
+    }
+    const bio = document.querySelector("section.about .bio");
+    const hasText = bio && bio.textContent.trim().length > 0;
+    if (hasText && bio.parentElement !== slot) {
+      slot.innerHTML = "";
+      slot.appendChild(bio);
+    }
+    const card = sidebar.querySelector(".rp-profile-about");
+    if (card) {
+      card.hidden = !slot.textContent.trim().length;
+    }
   }
 
   function populateSidebar(sidebar, username) {
@@ -231,7 +271,9 @@ export default apiInitializer((api) => {
     }
     restructureHeader();
     addQuickInfo(username);
-    populateSidebar(ensureLayout(), username);
+    const sidebar = ensureLayout();
+    populateSidebar(sidebar, username);
+    relocateBio(sidebar);
   }
 
   api.onPageChange(() => {
