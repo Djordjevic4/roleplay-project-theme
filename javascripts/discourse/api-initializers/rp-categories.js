@@ -1,9 +1,8 @@
 import { apiInitializer } from "discourse/lib/api";
 import {
-  fetchCategoryPostCount,
+  fetchCategoryTopicData,
   fetchGlobalLatestTopics,
   getSiteCategories,
-  loadLatestTopic,
   mapWithConcurrency,
   sectionHtml,
 } from "../lib/rp-category-cards";
@@ -30,23 +29,26 @@ async function loadCategoryData(api) {
   // activity ones whose latest topic didn't make the top 100 sitewide)
   // fall back to the slower per-category lookup, at most 4 at a time.
   const globalLatest = await fetchGlobalLatestTopics();
-  const missing = categories.filter((cat) => !globalLatest.has(cat.id));
 
-  // Latest-topic-per-category (fast, batched) and true post totals
-  // (one topic-list walk per category, so slower) are independent and
-  // fetched in parallel rather than one after the other.
-  const [fallbackLatest, postCounts] = await Promise.all([
-    mapWithConcurrency(missing, 4, async (cat) => [cat.id, await loadLatestTopic(cat.id)]),
-    mapWithConcurrency(categories, 4, async (cat) => [cat.id, await fetchCategoryPostCount(cat.id)]),
+  // The true post total needs every category's own topic list walked
+  // regardless (there's no sitewide shortcut for that), and that same
+  // walk's page 1 already gives us a latest-topic fallback for free —
+  // so this is the ONLY per-category request batch made here, at
+  // concurrency 4, instead of two separate batches.
+  const topicData = await mapWithConcurrency(categories, 4, async (cat) => [
+    cat.id,
+    await fetchCategoryTopicData(cat.id),
   ]);
-  const fallbackMap = new Map(fallbackLatest);
-  const postCountMap = new Map(postCounts);
+  const topicDataMap = new Map(topicData);
 
-  return categories.map((cat) => ({
-    ...cat,
-    rpLatest: globalLatest.get(cat.id) ?? fallbackMap.get(cat.id) ?? null,
-    rpPostCount: postCountMap.get(cat.id),
-  }));
+  return categories.map((cat) => {
+    const data = topicDataMap.get(cat.id);
+    return {
+      ...cat,
+      rpLatest: globalLatest.get(cat.id) ?? data?.latest ?? null,
+      rpPostCount: data?.total,
+    };
+  });
 }
 
 function buildHtml(categories) {

@@ -1,10 +1,9 @@
 import { apiInitializer } from "discourse/lib/api";
 import {
   escapeHtml,
-  fetchCategoryPostCount,
+  fetchCategoryTopicData,
   fetchGlobalLatestTopics,
   getSiteCategories,
-  loadLatestTopic,
   mapWithConcurrency,
   sectionHtml,
 } from "../lib/rp-category-cards";
@@ -99,18 +98,19 @@ export default apiInitializer((api) => {
     }
 
     const globalLatest = await fetchGlobalLatestTopics();
-    const missing = children.filter((c) => !globalLatest.has(c.id));
-    const [fallbackLatest, postCounts] = await Promise.all([
-      mapWithConcurrency(missing, 4, async (c) => [c.id, await loadLatestTopic(c.id)]),
-      mapWithConcurrency(children, 4, async (c) => [c.id, await fetchCategoryPostCount(c.id)]),
+    const topicData = await mapWithConcurrency(children, 4, async (c) => [
+      c.id,
+      await fetchCategoryTopicData(c.id),
     ]);
-    const fallbackMap = new Map(fallbackLatest);
-    const postCountMap = new Map(postCounts);
-    const withLatest = children.map((c) => ({
-      ...c,
-      rpLatest: globalLatest.get(c.id) ?? fallbackMap.get(c.id) ?? null,
-      rpPostCount: postCountMap.get(c.id),
-    }));
+    const topicDataMap = new Map(topicData);
+    const withLatest = children.map((c) => {
+      const data = topicDataMap.get(c.id);
+      return {
+        ...c,
+        rpLatest: globalLatest.get(c.id) ?? data?.latest ?? null,
+        rpPostCount: data?.total,
+      };
+    });
     if (myToken !== renderToken) {
       return; // navigated away while fetching
     }

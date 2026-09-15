@@ -60,48 +60,16 @@ function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-// A category with a genuinely real topic was intermittently showing
-// "No topics yet" — different categories on different page loads,
-// fixed by a refresh sometimes and not others. That pattern points to
-// Discourse's own rate limiting on its JSON endpoints: firing a fetch
-// for every category at once (see mapWithConcurrency below) could get
-// some of those parallel requests throttled, and a throttled request
-// was being silently treated as "this category has no topics" instead
-// of "this particular lookup failed". One retry after a short random
-// backoff (so retries don't all collide again) covers the rest.
-export async function loadLatestTopic(categoryId, attempt = 0) {
-  try {
-    const data = await fetchJSON(`/c/${categoryId}.json`);
-    const topic = data.topic_list?.topics?.[0];
-    if (!topic) {
-      return null;
-    }
-    const posterId = topic.posters?.[0]?.user_id;
-    const user = data.users?.find((u) => u.id === posterId);
-    return {
-      title: topic.title,
-      url: `/t/${topic.slug}/${topic.id}`,
-      username: user?.username || "",
-      avatarTemplate: user?.avatar_template || "",
-      bumpedAt: topic.bumped_at,
-    };
-  } catch (e) {
-    if (attempt < 1) {
-      await sleep(400 + Math.random() * 400);
-      return loadLatestTopic(categoryId, attempt + 1);
-    }
-    return null;
-  }
-}
-
 // Fetches recent activity across the WHOLE site in one request and
 // groups it by category, instead of one request per category — much
-// faster (1 request instead of N) and effectively immune to the
-// per-category rate-limiting that loadLatestTopic()'s retry logic
-// exists for, since there's only ever one request in flight here.
-// Categories with genuinely older activity than fits on this one page
-// won't be covered — callers should fall back to loadLatestTopic() for
-// any category id missing from the returned map.
+// faster (1 request instead of N) and effectively immune to Discourse's
+// own rate limiting on its JSON endpoints (firing a fetch per category
+// at once was intermittently getting some throttled, which silently
+// looked like "no topics" for an otherwise perfectly normal category),
+// since there's only ever one request in flight here. Categories with
+// genuinely older activity than fits on this one page won't be covered
+// — callers fall back to fetchCategoryTopicData() for any category id
+// missing from the returned map.
 export async function fetchGlobalLatestTopics() {
   const map = new Map();
   try {
@@ -124,7 +92,7 @@ export async function fetchGlobalLatestTopics() {
       });
     });
   } catch (e) {
-    // Empty map: callers fall back to loadLatestTopic() per category.
+    // Empty map: callers fall back to fetchCategoryTopicData() per category.
   }
   return map;
 }
@@ -143,17 +111,47 @@ export async function fetchGlobalLatestTopics() {
 // huge category can't turn into an unbounded fetch loop, and cached
 // briefly per category so re-rendering (e.g. navigating back and forth)
 // doesn't re-walk the whole category every time.
-const postCountCache = new Map(); // categoryId -> { total, ts }
-const POST_COUNT_CACHE_MS = 3 * 60 * 1000;
+const topicDataCache = new Map(); // categoryId -> { total, latest, ts }
+const TOPIC_DATA_CACHE_MS = 3 * 60 * 1000;
 const POST_COUNT_MAX_PAGES = 25;
 
-export async function fetchCategoryPostCount(categoryId) {
-  const cached = postCountCache.get(categoryId);
-  if (cached && Date.now() - cached.ts < POST_COUNT_CACHE_MS) {
-    return cached.total;
+function latestFromTopic(topic, users) {
+  if (!topic) {
+    return null;
+  }
+  const posterId = topic.posters?.[0]?.user_id;
+  const user = users.find((u) => u.id === posterId);
+  return {
+    title: topic.title,
+    url: `/t/${topic.slug}/${topic.id}`,
+    username: user?.username || "",
+    avatarTemplate: user?.avatar_template || "",
+    bumpedAt: topic.bumped_at,
+  };
+}
+
+// Walks a category's own (paginated) topic list once, in one pass,
+// producing BOTH the true total post count (sum of every topic's own
+// posts_count, which already includes that topic's first post plus
+// every reply — exactly "every single post" the user asked for) AND a
+// latest-topic fallback (page 1's first topic) for categories not
+// covered by the sitewide fetchGlobalLatestTopics() batch. Doing both
+// from a single walk — instead of a separate /c/{id}.json request for
+// "latest topic" AND another one for "post count", as an earlier
+// version of this did — halves the number of concurrent requests this
+// makes per page load, which matters because Discourse's own rate
+// limiting was the confirmed cause of earlier intermittent "No topics
+// yet" bugs; doubling request volume risked bringing that back, and in
+// practice was silently turning post counts into 0 for categories that
+// got throttled with no retry to recover.
+export async function fetchCategoryTopicData(categoryId, attempt = 0) {
+  const cached = topicDataCache.get(categoryId);
+  if (cached && Date.now() - cached.ts < TOPIC_DATA_CACHE_MS) {
+    return cached;
   }
 
   let total = 0;
+  let latest = null;
   let url = `/c/${categoryId}.json`;
   let pages = 0;
 
@@ -161,9 +159,10 @@ export async function fetchCategoryPostCount(categoryId) {
     while (url && pages < POST_COUNT_MAX_PAGES) {
       const data = await fetchJSON(url);
       const topics = data.topic_list?.topics || [];
+      if (pages === 0) {
+        latest = latestFromTopic(topics[0], data.users || []);
+      }
       topics.forEach((topic) => {
-        // posts_count includes the topic's own first post, plus every
-        // reply — exactly "every single post" the user asked for.
         total += topic.posts_count ?? 1;
       });
       url = data.topic_list?.more_topics_url || null;
@@ -172,12 +171,17 @@ export async function fetchCategoryPostCount(categoryId) {
         break;
       }
     }
-    postCountCache.set(categoryId, { total, ts: Date.now() });
-    return total;
+    const result = { total, latest, ts: Date.now() };
+    topicDataCache.set(categoryId, result);
+    return result;
   } catch (e) {
-    // Keep serving a stale cached value rather than flashing to 0 if a
-    // later refresh fails (e.g. rate limiting mid-pagination).
-    return cached ? cached.total : null;
+    if (attempt < 1) {
+      await sleep(400 + Math.random() * 400);
+      return fetchCategoryTopicData(categoryId, attempt + 1);
+    }
+    // Keep serving a stale cached value rather than flashing to 0/"No
+    // topics yet" if a later refresh fails (e.g. rate limiting).
+    return cached || { total: null, latest: null, ts: 0 };
   }
 }
 
