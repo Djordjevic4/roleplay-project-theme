@@ -112,6 +112,21 @@ function enhancePost(article) {
     topicBody.insertBefore(postInfos, topicBody.firstChild);
   }
 
+  // .post-menu-area (like/reply/flag/etc.) turned out to be nested
+  // inside .regular.contents (the cooked-text wrapper) rather than a
+  // sibling of it — confirmed via getBoundingClientRect/offsetParent
+  // on a live install: it was resolving its position: absolute against
+  // .regular.contents (sized to the text, hence following the text's
+  // height) instead of .row (the full card, sized to fill the space
+  // beside the avatar). Move it to be a direct child of .row so its
+  // position: absolute (see common.scss) reliably anchors to the
+  // actual card, not the text block.
+  const row = article.querySelector(".row");
+  const menuArea = article.querySelector(".post-menu-area");
+  if (row && menuArea && menuArea.parentElement !== row) {
+    row.appendChild(menuArea);
+  }
+
   const wrap = document.createElement("div");
   wrap.className = "rp-post-user-info";
 
