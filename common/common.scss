@@ -1197,6 +1197,21 @@ table.category-list,
     display: none;
   }
 
+  // Confirmed via a live DOM dump: Discourse's "Select All / Clear
+  // All" bulk-select bar genuinely lives inside <thead> (it's not a
+  // separate floating element) — but this table's own overflow:hidden
+  // above (needed to clip the rounded corners) makes the table itself
+  // the sticky positioning container for that <thead>, and inside a
+  // short table that isn't actually scrollable, that pushed the
+  // sticky header visually down into the row area instead of it
+  // staying put at the top. This list is never long enough to need a
+  // sticky column header anyway, so the safest fix is to turn the
+  // sticky behavior off rather than remove the corner-clipping
+  // overflow.
+  &.sticky-header thead {
+    position: static;
+  }
+
   .topic-list-header {
     .topic-list-data {
       background: var(--rp-panel-header);
