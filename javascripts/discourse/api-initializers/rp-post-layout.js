@@ -184,6 +184,33 @@ function enhancePost(article) {
   });
 }
 
+// CSS align-items: stretch on .row was measured (via getBoundingClientRect
+// on a live install) to NOT be reliably stretching .topic-avatar to the
+// row's full height — it was rendering shorter and vertically offset,
+// as if some other rule were overriding align-self. Rather than keep
+// chasing that in CSS, this measures .row's actual rendered height in
+// JS and sets it directly as .topic-avatar's height, guaranteeing the
+// avatar column (and its border-right divider) always spans the true
+// full height of the card regardless of what CSS cascade is doing.
+// A ResizeObserver keeps it in sync if content reflows later (e.g. a
+// lazy-loaded image inside the post finishing loading).
+function syncAvatarHeight(article) {
+  const row = article.querySelector(".row");
+  const avatarCol = article.querySelector(".topic-avatar");
+  if (!row || !avatarCol) {
+    return;
+  }
+  const sync = () => {
+    avatarCol.style.height = `${row.offsetHeight}px`;
+  };
+  sync();
+
+  if (window.ResizeObserver && !article.dataset.rpHeightObserved) {
+    article.dataset.rpHeightObserved = "true";
+    new ResizeObserver(sync).observe(row);
+  }
+}
+
 // Discourse only renders flag/bookmark/delete/etc. into the DOM once
 // the "..." (button.more-actions) trigger is actually clicked — it's
 // not just CSS-hidden behind it. Since common.scss hides that trigger
@@ -209,6 +236,7 @@ export default apiInitializer((api) => {
     document.querySelectorAll(".topic-post").forEach((article) => {
       enhancePost(article);
       expandPostActions(article);
+      syncAvatarHeight(article);
     });
   }
 
