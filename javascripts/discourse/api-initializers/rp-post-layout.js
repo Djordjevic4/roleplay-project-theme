@@ -63,27 +63,68 @@ function fetchTopicGroupNames(topicId) {
   return promise;
 }
 
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+// /u/{username}/summary.json's post_count turned out NOT to be a
+// reliable "total posts by this user" number in practice — confirmed
+// live: a user with 1 topic + 5 real replies (verified against their
+// own Activity > Topics/Replies tabs, and against a raw
+// /user_actions.json dump) was still showing post_count: 2 from that
+// endpoint. Same class of stale-counter bug as the category post
+// counts, so the same fix applies: count real UserAction rows instead
+// of trusting a cached column. Discourse's user_actions endpoint
+// accepts a comma-separated `filter` of action types, confirmed live —
+// 4 = started a topic, 5 = replied — so counting every row returned
+// for filter=4,5 (paginated via offset) is a literal "every post this
+// user made" total, exactly what was asked for. filter=2 (was_liked)
+// gives the equivalent real total for likes received.
+const USER_ACTIONS_MAX_PAGES = 20;
+
+async function countUserActions(username, filterCodes, attempt = 0) {
+  let total = 0;
+  let offset = 0;
+  let pages = 0;
+
+  try {
+    while (pages < USER_ACTIONS_MAX_PAGES) {
+      const res = await fetch(
+        `/user_actions.json?username=${encodeURIComponent(username)}&filter=${filterCodes}&offset=${offset}`,
+        { headers: { Accept: "application/json" } }
+      );
+      if (!res.ok) {
+        throw new Error(`HTTP ${res.status}`);
+      }
+      const data = await res.json();
+      const actions = data.user_actions || [];
+      total += actions.length;
+      if (!actions.length) {
+        break;
+      }
+      offset += actions.length;
+      pages += 1;
+    }
+    return total;
+  } catch (e) {
+    if (attempt < 1) {
+      await sleep(400 + Math.random() * 400);
+      return countUserActions(username, filterCodes, attempt + 1);
+    }
+    return null;
+  }
+}
+
 const statsCache = new Map();
 
 function fetchUserStats(username) {
   if (statsCache.has(username)) {
     return statsCache.get(username);
   }
-  const promise = fetch(`/u/${encodeURIComponent(username)}/summary.json`, {
-    headers: { Accept: "application/json" },
-  })
-    .then((r) => (r.ok ? r.json() : null))
-    .then((d) => {
-      const summary = d?.user_summary;
-      if (!summary) {
-        return null;
-      }
-      return {
-        postCount: summary.post_count ?? null,
-        likesReceived: summary.likes_received ?? null,
-      };
-    })
-    .catch(() => null);
+  const promise = Promise.all([
+    countUserActions(username, "4,5"),
+    countUserActions(username, "2"),
+  ]).then(([postCount, likesReceived]) => ({ postCount, likesReceived }));
   statsCache.set(username, promise);
   return promise;
 }
