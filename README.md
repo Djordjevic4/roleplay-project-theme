@@ -12,9 +12,13 @@ roleplay-project-theme/
 ├── common/
 │   └── common.scss
 └── javascripts/discourse/
+    ├── lib/
+    │   └── rp-category-cards.js       # shared category-card rendering (badge/row/section HTML)
     ├── api-initializers/
-    │   ├── rp-init.js                 # forces the 2-column layout grid + fallback parent-header marking
-    │   └── rp-categories.js           # replaces the native category list with custom cards (own JSON fetch)
+    │   ├── rp-init.js                 # forces the 2-column layout grid + sidebar/banner route visibility
+    │   ├── rp-categories.js           # replaces the native category list with custom cards (site.categories)
+    │   ├── rp-category-header.js      # builds the title/description header + Subforums panel per category
+    │   └── rp-post-layout.js          # classic left user-panel layout for topic posts + real poster stats
     └── connectors/
         ├── home-logo-wrapper/
         │   ├── rp-brand.js
@@ -22,9 +26,9 @@ roleplay-project-theme/
         │                              # already have a custom logo image — see below)
         ├── before-header-panel/
         │   ├── rp-nav.js
-        │   └── rp-nav.hbs             # UCP / Forums / Staff / Events / Shop / Thread Builder
+        │   └── rp-nav.hbs             # UCP / Forums / Staff
         └── above-main-container/
-            ├── rp-topbar.js / .hbs    # Home link + search trigger bar
+            ├── rp-topbar.js / .hbs    # banner image (categories index only)
             └── rp-sidebar.js / .hbs   # Server Status / Time / Weather / Recent Activity widgets
 ```
 
@@ -194,6 +198,20 @@ worth verifying on your actual install:
   documented, swappable API layer and safe fallbacks.
 - ✅ Native "welcome back" hero banner and Categories/Latest tab switcher
   hidden to match the reference (which has neither).
+- ✅ Composer (topic/reply creation) restyled to match the dark palette —
+  pure CSS, no functional changes.
+- ✅ Topic/post view reworked into a classic forum layout: fixed-width
+  left user panel (avatar, username, group title, real post/like counts
+  fetched from `/u/{username}/summary.json`) beside a bordered post-content
+  card, via `rp-post-layout.js` reparenting Discourse's own post elements
+  (not fake data, not a rebuilt post stream).
 - ⚠️ Nav icons are semantic FontAwesome choices (id-card, comments,
   user-shield) rather than pixel-identical copies of the screenshot's
   icons, which were too small/ambiguous to identify exactly.
+- ⚠️ The topic/post layout and composer restyle are best-effort against
+  Discourse's long-standing class names (`.topic-avatar`, `.names`,
+  `.user-title`, `#reply-control`, `.d-editor`, etc.) without a live DOM
+  dump to confirm against for this specific install — unlike most of the
+  rest of this theme, which was corrected against real inspected HTML.
+  If a piece looks unstyled/default, send its element's HTML the same way
+  we fixed the header/topic-list/category-page issues earlier.

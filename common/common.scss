@@ -1512,6 +1512,140 @@ input.title-input {
 }
 
 // -----------------------------------------------------------------
+// Topic/post view — classic forum layout (left user panel + content
+// card), reusing Discourse's own stable post-stream markup
+// (.topic-post / .topic-avatar / .topic-body / .names). The username/
+// title elements are moved into the avatar column by
+// javascripts/discourse/api-initializers/rp-post-layout.js (which
+// also fetches real per-poster stats) — this is best-effort against
+// long-standing Discourse class names without a live DOM dump to
+// confirm against, so a class that's changed on a given version just
+// leaves that one piece unstyled rather than breaking anything.
+// -----------------------------------------------------------------
+.topic-post {
+  margin-bottom: var(--rp-gap);
+
+  article.boxed {
+    background: transparent;
+    border: none;
+    padding: 0;
+  }
+
+  > div,
+  .row {
+    display: flex;
+    align-items: stretch;
+  }
+
+  .row {
+    background: var(--rp-panel);
+    border: 1px solid var(--rp-border);
+    border-radius: var(--rp-radius-md);
+    overflow: hidden;
+  }
+
+  .topic-avatar {
+    flex: 0 0 190px;
+    width: 190px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px 14px;
+    border-right: 1px solid var(--rp-border);
+    background: var(--rp-panel-header);
+    text-align: center;
+
+    .post-avatar {
+      margin: 0 0 10px;
+    }
+
+    img.avatar {
+      width: 90px !important;
+      height: 90px !important;
+      border-radius: var(--rp-radius-md);
+    }
+  }
+
+  .topic-body {
+    flex: 1 1 auto;
+    min-width: 0;
+    padding: 16px 20px;
+  }
+
+  .post-infos {
+    color: var(--rp-text-muted);
+  }
+}
+
+.rp-post-user-info {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+
+  .names {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    a.username {
+      font-weight: 700;
+      color: var(--rp-text);
+      text-decoration: none;
+      font-size: 0.95em;
+    }
+  }
+
+  .user-title {
+    color: var(--rp-red);
+    font-size: 0.78em;
+    font-weight: 700;
+    margin-top: 3px;
+  }
+}
+
+.rp-post-user-stats {
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid var(--rp-border);
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 0.76em;
+  color: var(--rp-text-muted);
+
+  .rp-post-stat-value {
+    color: var(--rp-text);
+    font-weight: 700;
+  }
+}
+
+// Compact system/mod messages (e.g. "X locked this topic")
+.small-action {
+  .small-action-contents {
+    background: transparent;
+    color: var(--rp-text-muted);
+    font-size: 0.85em;
+    justify-content: center;
+    text-align: center;
+  }
+
+  .small-action-icon {
+    color: var(--rp-text-muted);
+  }
+}
+
+// Topic title header card
+.title-wrapper {
+  background: var(--rp-panel);
+  border: 1px solid var(--rp-border);
+  border-radius: var(--rp-radius-md);
+  padding: 16px 20px;
+  margin-bottom: var(--rp-gap);
+}
+
+// -----------------------------------------------------------------
 // Responsive
 // -----------------------------------------------------------------
 @media (max-width: 1300px) {
@@ -1584,5 +1718,44 @@ input.title-input {
   .rp-weather-stats,
   .rp-weather-hourly {
     grid-template-columns: repeat(4, 1fr);
+  }
+
+  .topic-post .row {
+    flex-direction: column;
+  }
+
+  .topic-post .topic-avatar {
+    width: 100%;
+    flex-direction: row;
+    justify-content: flex-start;
+    border-right: none;
+    border-bottom: 1px solid var(--rp-border);
+    padding: 12px 14px;
+
+    .post-avatar {
+      margin: 0 12px 0 0;
+    }
+
+    img.avatar {
+      width: 48px !important;
+      height: 48px !important;
+    }
+  }
+
+  .rp-post-user-info {
+    align-items: flex-start;
+    width: auto;
+
+    .names {
+      align-items: flex-start;
+    }
+  }
+
+  .rp-post-user-stats {
+    flex-direction: row;
+    gap: 12px;
+    border-top: none;
+    margin-top: 6px;
+    padding-top: 0;
   }
 }
