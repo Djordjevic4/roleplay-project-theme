@@ -9,6 +9,33 @@ export function escapeHtml(str) {
   );
 }
 
+function slugList(str) {
+  return String(str ?? "")
+    .split(",")
+    .map((s) => s.trim().toLowerCase())
+    .filter(Boolean);
+}
+
+// Shared group-tier coloring: which groups count as "red" or "yellow"
+// is configured via settings.yml (group_color_red_slugs /
+// group_color_yellow_slugs) rather than hardcoded, so the site admin
+// can add/remove groups without a code change. Returns a CSS color
+// value (a var() reference) or null if the group isn't in either
+// list, so callers can fall back to their own default styling.
+export function groupColorFor(groupSlug) {
+  if (!groupSlug) {
+    return null;
+  }
+  const slug = String(groupSlug).toLowerCase();
+  if (slugList(settings.group_color_red_slugs).includes(slug)) {
+    return "var(--rp-group-red)";
+  }
+  if (slugList(settings.group_color_yellow_slugs).includes(slug)) {
+    return "var(--rp-group-yellow)";
+  }
+  return null;
+}
+
 export function relativeTime(dateStr) {
   if (!dateStr) {
     return "";
@@ -142,6 +169,7 @@ export async function fetchGlobalLatestTopics() {
         url: `/t/${topic.slug}/${topic.id}`,
         username: user?.username || "",
         avatarTemplate: user?.avatar_template || "",
+        primaryGroupName: user?.primary_group_name || null,
         bumpedAt: topic.bumped_at,
       });
     });
@@ -180,6 +208,7 @@ function latestFromTopic(topic, users) {
     url: `/t/${topic.slug}/${topic.id}`,
     username: user?.username || "",
     avatarTemplate: user?.avatar_template || "",
+    primaryGroupName: user?.primary_group_name || null,
     bumpedAt: topic.bumped_at,
   };
 }
@@ -338,12 +367,14 @@ export function badgeHtml(cat) {
 
 export function rowHtml(cat) {
   const latest = cat.rpLatest;
+  const userColor = latest ? groupColorFor(latest.primaryGroupName) : null;
+  const userStyle = userColor ? ` style="color:${userColor}"` : "";
   const latestHtml = latest
     ? `<a class="rp-cat-latest" href="${escapeHtml(latest.url)}">
         ${avatarHtml(latest.avatarTemplate, 36)}
         <span class="rp-cat-latest-info">
           <span class="rp-cat-latest-title">${escapeHtml(latest.title)}</span>
-          <span class="rp-cat-latest-meta"><span class="rp-cat-latest-user">${escapeHtml(
+          <span class="rp-cat-latest-meta"><span class="rp-cat-latest-user"${userStyle}>${escapeHtml(
             latest.username
           )}</span> · ${escapeHtml(relativeTime(latest.bumpedAt))}</span>
         </span>

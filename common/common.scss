@@ -17,6 +17,11 @@
   --rp-text-muted: #8793a3;
   --rp-green: #16c46a;
   --rp-red: #ff4b4b;
+  // Group-tier text colors (see group_color_red_slugs /
+  // group_color_yellow_slugs in settings.yml) — separate from
+  // --rp-red above, which is used for danger/error accents.
+  --rp-group-red: #e74c3c;
+  --rp-group-yellow: #f1c40f;
   --rp-radius-sm: 4px;
   --rp-radius-md: 8px;
   --rp-header-height: 80px;
@@ -1869,7 +1874,10 @@ input.title-input {
   // not Discourse's free-text .user-title, which an admin can set to
   // anything regardless of actual group membership.
   .rp-post-group-title {
-    color: #e74c3c;
+    // Default for any group not in group_color_red_slugs /
+    // group_color_yellow_slugs (settings.yml) — those get their real
+    // tier color applied inline by rp-post-layout.js instead.
+    color: var(--rp-text-muted);
     font-size: 12px;
     font-weight: 700;
     text-transform: uppercase;

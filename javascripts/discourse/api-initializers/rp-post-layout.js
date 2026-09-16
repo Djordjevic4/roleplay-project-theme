@@ -1,5 +1,5 @@
 import { apiInitializer } from "discourse/lib/api";
-import { countUserActions } from "../lib/rp-category-cards";
+import { countUserActions, groupColorFor } from "../lib/rp-category-cards";
 
 // ---------------------------------------------------------------
 // Classic forum post layout (Invision/XenForo-style left user panel).
@@ -54,7 +54,10 @@ function fetchTopicGroupNames(topicId) {
       const map = new Map();
       (d?.post_stream?.posts || []).forEach((p) => {
         if (p.username && p.primary_group_name && !map.has(p.username)) {
-          map.set(p.username, humanizeGroupName(p.primary_group_name));
+          map.set(p.username, {
+            name: humanizeGroupName(p.primary_group_name),
+            slug: p.primary_group_name,
+          });
         }
       });
       return map;
@@ -142,9 +145,13 @@ function enhancePost(article) {
   const topicId = currentTopicIdFromUrl();
   if (topicId) {
     fetchTopicGroupNames(topicId).then((map) => {
-      const groupName = map.get(username);
-      if (groupName && groupTitleEl.isConnected) {
-        groupTitleEl.textContent = groupName;
+      const group = map.get(username);
+      if (group && groupTitleEl.isConnected) {
+        groupTitleEl.textContent = group.name;
+        const color = groupColorFor(group.slug);
+        if (color) {
+          groupTitleEl.style.color = color;
+        }
       }
     });
   }

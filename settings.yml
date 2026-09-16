@@ -29,6 +29,20 @@ primary_color_hover:
   default: "#3b82f6"
   type: string
 
+# --- Group name colors ------------------------------------------
+# Comma-separated group slugs (the part after /g/ in a group's URL,
+# e.g. "head_administrator") — anywhere this theme colors a username
+# or group name by group (the per-post group title, the Forums index
+# "latest reply" author link), a group in this list gets that color
+# instead of the default. A group in neither list keeps the default
+# styling for that spot (e.g. plain link blue, muted gray).
+group_color_red_slugs:
+  default: "management,head_administrator"
+  type: string
+group_color_yellow_slugs:
+  default: "administrator,senior_administrator,trial_administrator"
+  type: string
+
 # --- Header navigation links (URLs only — labels/icons are fixed
 #     to match the reference design; edit these to point anywhere) -
 forums_url:
