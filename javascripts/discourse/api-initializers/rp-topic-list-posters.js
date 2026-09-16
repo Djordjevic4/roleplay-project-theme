@@ -32,6 +32,23 @@ function enhanceRow(link) {
     label.style.color = color;
   }
   link.appendChild(label);
+
+  // Requested explicitly: clicking this avatar/name should go straight
+  // to the profile. Discourse's default behavior on this real link is
+  // to open a hover-card popup on click instead of navigating (same
+  // issue fixed for the post-view avatar/username in rp-post-layout.js)
+  // — a capture-phase listener runs before Discourse's own card-trigger
+  // handler, so preventDefault + stopImmediatePropagation here wins.
+  const profileUrl = `/u/${encodeURIComponent(username)}`;
+  link.addEventListener(
+    "click",
+    (e) => {
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      window.location.href = profileUrl;
+    },
+    true
+  );
 }
 
 function enhanceAll() {
