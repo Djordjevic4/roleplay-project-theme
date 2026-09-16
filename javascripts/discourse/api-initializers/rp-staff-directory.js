@@ -1,5 +1,11 @@
 import { apiInitializer } from "discourse/lib/api";
-import { escapeHtml, fetchJSON, groupColorFor, humanizeGroupName } from "../lib/rp-category-cards";
+import {
+  escapeHtml,
+  fetchJSON,
+  groupColorFor,
+  humanizeGroupName,
+  mapWithConcurrency,
+} from "../lib/rp-category-cards";
 
 // ---------------------------------------------------------------
 // Staff Directory — replaces the native /about page's content
@@ -22,17 +28,36 @@ function slugList(str) {
     .filter(Boolean);
 }
 
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+// Reported live: sections would randomly go missing on reload,
+// sometimes one group, sometimes another, sometimes both showing.
+// Same root cause as the earlier "No topics yet" category-card bug —
+// firing all group-member requests in parallel (Promise.all below,
+// previously) could get some throttled by Discourse's own rate
+// limiting, and a throttled request was being silently cached as "0
+// members" forever. Fixed the same way: retry once on failure, and
+// cap how many of these run at once (see mapWithConcurrency below).
 const membersCache = new Map();
 
-function fetchGroupMembers(slug) {
+async function fetchGroupMembers(slug, attempt = 0) {
   if (membersCache.has(slug)) {
     return membersCache.get(slug);
   }
-  const promise = fetchJSON(`/groups/${encodeURIComponent(slug)}/members.json?limit=100`)
-    .then((data) => data.members || [])
-    .catch(() => []);
-  membersCache.set(slug, promise);
-  return promise;
+  try {
+    const data = await fetchJSON(`/groups/${encodeURIComponent(slug)}/members.json?limit=100`);
+    const members = data.members || [];
+    membersCache.set(slug, members);
+    return members;
+  } catch (e) {
+    if (attempt < 1) {
+      await sleep(400 + Math.random() * 400);
+      return fetchGroupMembers(slug, attempt + 1);
+    }
+    return []; // not cached — next render() call gets a fresh attempt
+  }
 }
 
 function memberHtml(member, slug) {
@@ -56,7 +81,7 @@ function memberHtml(member, slug) {
 
 async function buildSectionsHtml() {
   const slugs = slugList(settings.staff_directory_groups);
-  const membersBySlug = await Promise.all(slugs.map((slug) => fetchGroupMembers(slug)));
+  const membersBySlug = await mapWithConcurrency(slugs, 3, (slug) => fetchGroupMembers(slug));
 
   return slugs
     .map((slug, i) => ({ slug, members: membersBySlug[i] }))
