@@ -1000,18 +1000,27 @@ body.category-list .top-lists {
   color: var(--rp-text);
 }
 
+// .rp-cat-latest is a plain div now (not a single wrapping <a>) — the
+// title and the avatar/username are two separate real links (see
+// rowHtml() in rp-category-cards.js), so each can go somewhere
+// different: the title to the topic, the avatar/username to that
+// poster's profile.
 .rp-cat-latest {
   flex: 0 0 260px;
   max-width: 260px;
   display: flex;
   align-items: center;
   gap: 8px;
-  text-decoration: none;
 
   &.rp-cat-latest-empty {
     color: var(--rp-text-muted);
     font-size: 0.82em;
   }
+}
+
+.rp-cat-latest-avatar-link {
+  flex-shrink: 0;
+  line-height: 0;
 }
 
 .rp-cat-avatar {
@@ -1029,9 +1038,14 @@ body.category-list .top-lists {
   font-size: 0.85em;
   font-weight: 600;
   color: var(--rp-text);
+  text-decoration: none;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+
+  &:hover {
+    text-decoration: underline;
+  }
 }
 
 .rp-cat-latest-meta {
@@ -1045,6 +1059,11 @@ body.category-list .top-lists {
   // for posters with no group_color_red/yellow_slugs match — inline
   // style from rp-category-cards.js overrides this when one applies.
   color: var(--rp-text-muted);
+  text-decoration: none;
+
+  &:hover {
+    text-decoration: underline;
+  }
 }
 
 @media (max-width: 900px) {

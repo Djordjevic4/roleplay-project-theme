@@ -380,16 +380,21 @@ export function rowHtml(cat) {
   const latest = cat.rpLatest;
   const userColor = latest ? groupColorFor(latest.primaryGroupName) : null;
   const userStyle = userColor ? ` style="color:${userColor}"` : "";
+  const userUrl = latest ? `/u/${escapeHtml(latest.username)}` : "";
+  // Two separate real links instead of one link wrapping everything:
+  // the title goes to the topic, the avatar/username go to that
+  // poster's profile — requested explicitly instead of both pointing
+  // at the topic.
   const latestHtml = latest
-    ? `<a class="rp-cat-latest" href="${escapeHtml(latest.url)}">
-        ${avatarHtml(latest.avatarTemplate, 36)}
+    ? `<div class="rp-cat-latest">
+        <a class="rp-cat-latest-avatar-link" href="${userUrl}">${avatarHtml(latest.avatarTemplate, 36)}</a>
         <span class="rp-cat-latest-info">
-          <span class="rp-cat-latest-title">${escapeHtml(latest.title)}</span>
-          <span class="rp-cat-latest-meta"><span class="rp-cat-latest-user"${userStyle}>${escapeHtml(
+          <a class="rp-cat-latest-title" href="${escapeHtml(latest.url)}">${escapeHtml(latest.title)}</a>
+          <span class="rp-cat-latest-meta"><a class="rp-cat-latest-user" href="${userUrl}"${userStyle}>${escapeHtml(
             latest.username
-          )}</span> · ${escapeHtml(relativeTime(latest.bumpedAt))}</span>
+          )}</a> · ${escapeHtml(relativeTime(latest.bumpedAt))}</span>
         </span>
-      </a>`
+      </div>`
     : `<span class="rp-cat-latest rp-cat-latest-empty">No topics yet</span>`;
 
   return `<div class="rp-cat-row" data-category-id="${cat.id}">
