@@ -2037,11 +2037,15 @@ button.more-actions,
     display: flex;
     align-items: center;
     gap: 8px;
-    color: var(--rp-text);
+    // Confirmed live: some more specific Discourse core rule was
+    // setting this to var(--secondary) — our dark background color —
+    // making the text nearly invisible against the dark bar. !important
+    // to guarantee it actually wins.
+    color: var(--rp-text) !important;
     text-decoration: none;
 
     &:hover {
-      color: var(--rp-blue-hover);
+      color: var(--rp-blue-hover) !important;
     }
   }
 
