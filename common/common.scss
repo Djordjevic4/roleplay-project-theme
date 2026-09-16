@@ -1309,7 +1309,7 @@ table.category-list,
     }
 
     .topic-list-data {
-      padding: 14px 12px;
+      padding: 18px 14px;
       vertical-align: middle;
     }
   }
@@ -1362,10 +1362,30 @@ table.category-list,
     text-transform: none;
   }
 
-  .posters img.avatar {
-    width: 36px;
-    height: 36px;
-    border-radius: var(--rp-radius-sm);
+  .posters {
+    // The last poster's real username is injected next to their
+    // avatar by rp-topic-list-posters.js (colored by real group —
+    // see .rp-topic-poster-name below), so that link needs to be a
+    // row, not just an image.
+    a.latest {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      text-decoration: none;
+    }
+
+    img.avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: var(--rp-radius-sm);
+    }
+  }
+
+  .rp-topic-poster-name {
+    font-size: 0.85em;
+    font-weight: 700;
+    color: var(--rp-text-muted);
+    white-space: nowrap;
   }
 
   td.num {
@@ -1497,6 +1517,46 @@ input.title-input {
   border: 1px solid var(--rp-border);
   border-radius: var(--rp-radius-sm);
   color: var(--rp-text);
+}
+
+// Category breadcrumb — confirmed live: each level is really a native
+// select-kit combobox ("Filter by: X"), not plain links, so this
+// keeps that real jump-between-categories behavior and just restyles
+// it to read as a clean pill-style breadcrumb chip instead of a
+// default form control.
+.category-breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  list-style: none;
+  margin: 0 0 var(--rp-gap);
+  padding: 0;
+
+  li {
+    display: flex;
+    align-items: center;
+
+    &:not(:last-child)::after {
+      content: "›";
+      margin-left: 6px;
+      color: var(--rp-text-muted);
+    }
+  }
+
+  .select-kit-header {
+    background: var(--rp-panel);
+    border: 1px solid var(--rp-border);
+    border-radius: 999px;
+    padding: 6px 14px;
+    color: var(--rp-text-muted);
+    font-size: 0.85em;
+    font-weight: 600;
+
+    &:hover {
+      color: var(--rp-text);
+      border-color: var(--rp-blue);
+    }
+  }
 }
 
 .select-kit.is-expanded .select-kit-header {
