@@ -2687,14 +2687,20 @@ section.about {
   }
 
   .chat-message-info__username {
-    // Reported live: unreadable dark text against the dark
-    // background. Discourse's chat plugin can color this by the
-    // sender's group (see the .group--X class it also carries) —
-    // left as a possible future enhancement (see the per-group
-    // username-color discussion elsewhere), but readability comes
-    // first: a plain light color that's always legible here.
     color: var(--rp-text) !important;
     font-weight: 700;
+
+    // Confirmed live: the actual visible text lives on a NESTED
+    // <button class="chat-message-info__username_name">, not the
+    // outer span above — its computed color was rgb(22, 27, 34),
+    // exactly this theme's --rp-panel/--primary-very-low value, which
+    // Discourse reuses here in a context meant for dark-on-light text
+    // that just happens to collide with our dark panel color. Targeted
+    // directly since the outer span's color was never actually the
+    // one rendering the name.
+    .chat-message-info__username_name {
+      color: var(--rp-text) !important;
+    }
   }
 
   .chat-message-info__date {
