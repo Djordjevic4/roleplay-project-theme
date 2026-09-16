@@ -307,6 +307,32 @@ body.rp-brand-active {
   border-radius: 50%;
 }
 
+// Notifications dropdown panel. Confirmed real class via a live
+// install: li.notification (with .read/.unread modifiers) — reported
+// both hovering an item AND a genuinely unread notification showed a
+// plain white row. Same class of bug as the header icon buttons
+// above: some Discourse core background resolved light instead of
+// dark once this theme's colors were applied.
+li.notification {
+  &:hover,
+  &:focus {
+    background: var(--rp-panel-header) !important;
+  }
+
+  &.unread {
+    background: var(--rp-panel) !important;
+  }
+
+  a {
+    color: var(--rp-text) !important;
+  }
+
+  .item-description,
+  .excerpt {
+    color: var(--rp-text-muted) !important;
+  }
+}
+
 // -----------------------------------------------------------------
 // Banner (replaces the old Home + Search bar). Native header search
 // icon stays visible now — there's no theme-provided search box to
