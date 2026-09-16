@@ -1950,6 +1950,29 @@ input.title-input {
       margin-left: auto;
     }
   }
+
+  // Confirmed live: this small "Xm/Xh/Xd" post-age badge (plus the
+  // read-state circle next to it) is positioned assuming a wider
+  // native card — its right edge was landing ~19px past .row's own
+  // right edge, hanging off the card entirely. Repositioned explicitly
+  // against .row (already the positioning context for .post-menu-area
+  // above) so it always stays inside the card.
+  .post-info.post-date {
+    position: absolute;
+    top: 10px;
+    right: 40px;
+    color: var(--rp-text-muted);
+    font-size: 0.78em;
+    z-index: 2;
+  }
+
+  .read-state {
+    position: absolute;
+    top: 10px;
+    right: 14px;
+    z-index: 2;
+    color: var(--rp-text-muted);
+  }
 }
 
 .rp-post-user-info {
