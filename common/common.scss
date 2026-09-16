@@ -278,12 +278,22 @@ body.rp-brand-active {
 // Native right-side header icons (avatar, notifications, messages, etc.)
 // are left fully functional — only lightly restyled to fit the palette.
 .d-header-icons {
+  // Reported live: hovering these buttons showed a plain white box —
+  // Discourse's own hover background for icon buttons resolved to a
+  // light color we hadn't overridden (couldn't confirm the exact core
+  // rule directly — its stylesheet threw on cssRules access, likely
+  // served cross-origin — so this forces both states explicitly on
+  // the confirmed real classes instead: "btn no-text btn-icon icon
+  // btn-flat").
   .icon,
   .btn-flat {
     color: var(--rp-text-muted);
+    background: transparent !important;
 
-    &:hover {
+    &:hover,
+    &:focus {
       color: var(--rp-text);
+      background: var(--rp-panel-header) !important;
     }
   }
 }
