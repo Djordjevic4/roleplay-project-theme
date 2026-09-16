@@ -1015,7 +1015,10 @@ body.category-list .top-lists {
 }
 
 .rp-cat-latest-user {
-  color: var(--rp-blue-hover);
+  // Neutral default (matches the muted "Xh ago" timestamp next to it)
+  // for posters with no group_color_red/yellow_slugs match — inline
+  // style from rp-category-cards.js overrides this when one applies.
+  color: var(--rp-text-muted);
 }
 
 @media (max-width: 900px) {
