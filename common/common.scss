@@ -2019,7 +2019,7 @@ button.more-actions,
 // aside.quote and .fk-d-menu earlier.
 .staff-counters {
   background: var(--rp-panel-header) !important;
-  border: 1px solid var(--rp-red);
+  border: 1px solid var(--rp-border);
   border-radius: var(--rp-radius-md);
   margin-bottom: 12px;
   padding: 10px 16px;
@@ -2041,12 +2041,25 @@ button.more-actions,
     text-decoration: none;
 
     &:hover {
-      color: var(--rp-red);
+      color: var(--rp-blue-hover);
     }
   }
 
+  // Same small pill/badge look used for the category "posts" count
+  // elsewhere in this theme, in the site's own blue accent rather than
+  // a red warning color, to match the rest of the design.
   .deleted-posts {
-    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 20px;
+    height: 20px;
+    padding: 0 6px;
+    border-radius: 999px;
+    background: var(--rp-blue);
+    color: #fff;
+    font-weight: 700;
+    font-size: 0.85em;
   }
 }
 
