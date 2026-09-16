@@ -1340,8 +1340,12 @@ table.category-list,
   // single-line excerpt, colored tag pills — same hierarchy used on
   // the Forums index (.rp-cat-name / .rp-cat-desc).
   .main-link {
-    .title {
-      color: var(--rp-text);
+    .title,
+    .title:visited {
+      // !important guards against a visited-topic muted color —
+      // reported live as not looking white/bright like an unvisited
+      // topic's title.
+      color: var(--rp-text) !important;
       font-weight: 700;
       font-size: 1.02em;
       text-decoration: none;
@@ -1363,6 +1367,25 @@ table.category-list,
       overflow: hidden;
       text-overflow: ellipsis;
       max-width: 100%;
+    }
+
+    // "Author, Date" line injected by rp-topic-list-meta.js — the
+    // real topic starter (colored by their real group) + the topic's
+    // real creation date.
+    .rp-topic-op-line {
+      margin-bottom: 2px;
+    }
+
+    .rp-topic-op {
+      // Neutral default (no group_color match) to match the rest of
+      // the muted meta text around it.
+      color: var(--rp-text-muted);
+      text-decoration: none;
+      font-weight: 600;
+
+      &:hover {
+        text-decoration: underline;
+      }
     }
   }
 

@@ -152,6 +152,18 @@ function latestPosterId(topic) {
   return (latest || posters[0])?.user_id;
 }
 
+// Same idea as latestPosterId, for the topic-starting poster instead:
+// Discourse's poster objects carry a human-readable `description`
+// (confirmed live via an avatar's title attribute — e.g. "Djordjevic -
+// Original Poster, Most Recent Poster") that includes "Original" for
+// whoever started the topic. Falls back to posters[0] (Discourse lists
+// the OP first when present) if that text isn't found.
+function originalPosterId(topic) {
+  const posters = topic.posters || [];
+  const original = posters.find((p) => p.description && p.description.includes("Original"));
+  return (original || posters[0])?.user_id;
+}
+
 // Fetches recent activity across the WHOLE site in one request and
 // groups it by category, instead of one request per category — much
 // faster (1 request instead of N) and effectively immune to Discourse's
@@ -246,6 +258,10 @@ export async function fetchCategoryTopicData(categoryId, attempt = 0) {
 
   let total = 0;
   let latest = null;
+  // Per-topic starter info (username/group/created date) for every
+  // topic seen in this category — used to show "Author, Date" under
+  // each topic-list row's title (rp-topic-list-meta.js).
+  const topicMeta = new Map();
   let url = `/c/${categoryId}.json`;
   let pages = 0;
 
@@ -253,11 +269,18 @@ export async function fetchCategoryTopicData(categoryId, attempt = 0) {
     while (url && pages < POST_COUNT_MAX_PAGES) {
       const data = await fetchJSON(url);
       const topics = data.topic_list?.topics || [];
+      const users = data.users || [];
       if (pages === 0) {
-        latest = latestFromTopic(topics[0], data.users || []);
+        latest = latestFromTopic(topics[0], users);
       }
       topics.forEach((topic) => {
         total += topic.posts_count ?? 1;
+        const opUser = users.find((u) => u.id === originalPosterId(topic));
+        topicMeta.set(topic.id, {
+          username: opUser?.username || "",
+          primaryGroupName: opUser?.primary_group_name || null,
+          createdAt: topic.created_at,
+        });
       });
       url = data.topic_list?.more_topics_url || null;
       pages += 1;
@@ -265,7 +288,7 @@ export async function fetchCategoryTopicData(categoryId, attempt = 0) {
         break;
       }
     }
-    const result = { total, latest, ts: Date.now() };
+    const result = { total, latest, topicMeta, ts: Date.now() };
     topicDataCache.set(categoryId, result);
     return result;
   } catch (e) {
@@ -275,7 +298,7 @@ export async function fetchCategoryTopicData(categoryId, attempt = 0) {
     }
     // Keep serving a stale cached value rather than flashing to 0/"No
     // topics yet" if a later refresh fails (e.g. rate limiting).
-    return cached || { total: null, latest: null, ts: 0 };
+    return cached || { total: null, latest: null, topicMeta: new Map(), ts: 0 };
   }
 }
 
