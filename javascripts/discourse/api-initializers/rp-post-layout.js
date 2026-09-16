@@ -128,10 +128,35 @@ function enhancePost(article) {
 
   avatarCol.appendChild(wrap);
 
-  const username = namesEl.querySelector("a")?.textContent?.trim();
+  const nameLink = namesEl.querySelector("a");
+  const username =
+    nameLink?.getAttribute("href")?.match(/^\/u\/([^/]+)/)?.[1] || nameLink?.textContent?.trim();
   if (!username) {
     return;
   }
+
+  // Requested explicitly: clicking the avatar or username should go
+  // straight to that user's profile — Discourse's default behavior on
+  // these real links is to open a hover-card popup on click instead of
+  // navigating, which read as "the click does nothing". Capture-phase
+  // listeners run before Discourse's own card-trigger handler, so
+  // preventDefault + stopImmediatePropagation here reliably wins.
+  const profileUrl = `/u/${encodeURIComponent(username)}`;
+  [avatarCol.querySelector(".post-avatar a"), nameLink].forEach((link) => {
+    if (!link || link.dataset.rpProfileLinkForced) {
+      return;
+    }
+    link.dataset.rpProfileLinkForced = "true";
+    link.addEventListener(
+      "click",
+      (e) => {
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        window.location.href = profileUrl;
+      },
+      true
+    );
+  });
 
   const topicId = currentTopicIdFromUrl();
   if (topicId) {
