@@ -977,6 +977,10 @@ body.category-list .top-lists {
   color: var(--rp-text);
 }
 
+.rp-cat-main:hover .rp-cat-name {
+  text-decoration: underline;
+}
+
 .rp-cat-desc {
   color: var(--rp-text-muted);
   font-size: 0.82em;
