@@ -1363,6 +1363,16 @@ table.category-list,
   }
 
   .posters {
+    // A topic with several distinct posters shows one avatar per
+    // poster here by default, which turned into a cramped, uneven
+    // row once the latest poster's name was added next to just one
+    // of them. Reported live as looking bad — matching the reference
+    // design (one avatar + one colored name, the most recent poster
+    // only), every OTHER poster's avatar is hidden.
+    a:not(.latest) {
+      display: none;
+    }
+
     // The last poster's real username is injected next to their
     // avatar by rp-topic-list-posters.js (colored by real group —
     // see .rp-topic-poster-name below), so that link needs to be a
@@ -1378,6 +1388,9 @@ table.category-list,
       width: 40px;
       height: 40px;
       border-radius: var(--rp-radius-sm);
+      border: none;
+      outline: none;
+      box-shadow: none;
     }
   }
 
