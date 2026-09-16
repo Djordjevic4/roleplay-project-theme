@@ -128,9 +128,12 @@ function enhancePost(article) {
 
   avatarCol.appendChild(wrap);
 
+  // Reverted to reading the username from the link's text (not its
+  // href) — parsing it from href briefly broke the group-title lookup
+  // below, which keys its map by the exact username string Discourse's
+  // /t/{id}.json returns, and that stopped matching.
   const nameLink = namesEl.querySelector("a");
-  const username =
-    nameLink?.getAttribute("href")?.match(/^\/u\/([^/]+)/)?.[1] || nameLink?.textContent?.trim();
+  const username = nameLink?.textContent?.trim();
   if (!username) {
     return;
   }
