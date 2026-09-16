@@ -16,6 +16,17 @@ function slugList(str) {
     .filter(Boolean);
 }
 
+// "head_administrator" -> "Head Administrator" — shared by the
+// per-post group title (rp-post-layout.js) and the staff directory
+// (rp-staff-directory.js) so both format group slugs identically.
+export function humanizeGroupName(slug) {
+  return String(slug ?? "")
+    .split(/[_-]+/)
+    .filter(Boolean)
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+    .join(" ");
+}
+
 // Shared group-tier coloring: which groups count as "red" or "yellow"
 // is configured via settings.yml (group_color_red_slugs /
 // group_color_yellow_slugs) rather than hardcoded, so the site admin

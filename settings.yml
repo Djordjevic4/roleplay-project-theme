@@ -43,6 +43,15 @@ group_color_yellow_slugs:
   default: "administrator,senior_administrator,trial_administrator"
   type: string
 
+# --- Staff directory (replaces the native /about page content) --
+# Comma-separated group slugs, in the order sections should appear.
+# Each becomes its own section listing that group's REAL members
+# (fetched from /groups/{slug}/members.json — nothing fabricated); a
+# group with zero members is skipped entirely rather than shown empty.
+staff_directory_groups:
+  default: "management,head_administrator,senior_administrator,administrator,trial_administrator"
+  type: string
+
 # --- Header navigation links (URLs only — labels/icons are fixed
 #     to match the reference design; edit these to point anywhere) -
 forums_url:

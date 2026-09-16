@@ -1,5 +1,5 @@
 import { apiInitializer } from "discourse/lib/api";
-import { countUserActions, groupColorFor } from "../lib/rp-category-cards";
+import { countUserActions, groupColorFor, humanizeGroupName } from "../lib/rp-category-cards";
 
 // ---------------------------------------------------------------
 // Classic forum post layout (Invision/XenForo-style left user panel).
@@ -19,15 +19,6 @@ import { countUserActions, groupColorFor } from "../lib/rp-category-cards";
 // rather than importing an icon-library module.
 function iconSvg(name) {
   return `<svg class="fa d-icon d-icon-${name} svg-icon fa-width-auto svg-string rp-post-stat-icon" width="1em" height="1em" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><use href="#${name}"></use></svg>`;
-}
-
-// "head_administrator" -> "Head Administrator"
-function humanizeGroupName(slug) {
-  return slug
-    .split(/[_-]+/)
-    .filter(Boolean)
-    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
-    .join(" ");
 }
 
 function currentTopicIdFromUrl() {

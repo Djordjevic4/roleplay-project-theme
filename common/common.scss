@@ -2519,6 +2519,107 @@ section.about {
   padding: 20px;
 }
 
+// -----------------------------------------------------------------
+// Staff Directory (replaces /about's content — see
+// rp-staff-directory.js). One dark panel per group, real members in
+// a flex-wrap grid — no bio/stats/description clutter, per request.
+// -----------------------------------------------------------------
+.rp-staff-page {
+  padding: var(--rp-gap) 0;
+}
+
+.rp-staff-header h1 {
+  font-size: 1.7em;
+  font-weight: 800;
+  color: var(--rp-text);
+  margin: 0 0 var(--rp-gap);
+}
+
+.rp-staff-sections {
+  display: flex;
+  flex-direction: column;
+  gap: var(--rp-gap);
+}
+
+.rp-staff-section {
+  background: var(--rp-panel);
+  border: 1px solid var(--rp-border);
+  border-radius: var(--rp-radius-md);
+  padding: 20px;
+}
+
+.rp-staff-section-title {
+  font-size: 1.1em;
+  font-weight: 700;
+  color: var(--rp-text);
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--rp-border);
+}
+
+.rp-staff-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+}
+
+.rp-staff-member {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 110px;
+  text-align: center;
+}
+
+.rp-staff-avatar {
+  width: 90px;
+  height: 90px;
+  border-radius: 8px;
+  object-fit: cover;
+  margin-bottom: 10px;
+}
+
+.rp-staff-avatar-fallback {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--rp-panel-header);
+  color: var(--rp-text-muted);
+  font-size: 1.8em;
+  font-weight: 700;
+}
+
+.rp-staff-name {
+  font-weight: 700;
+  color: var(--rp-blue-hover);
+  text-decoration: none;
+  word-break: break-word;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+.rp-staff-message {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 8px;
+  color: var(--rp-text-muted);
+  font-size: 0.8em;
+  text-decoration: none;
+
+  &:hover {
+    color: var(--rp-text);
+  }
+}
+
+.rp-staff-loading,
+.rp-staff-empty {
+  color: var(--rp-text-muted);
+  padding: 20px 0;
+}
+
 @media (max-width: 767px) {
   :root {
     --rp-header-height: 64px;
