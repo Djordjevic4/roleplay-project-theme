@@ -236,31 +236,29 @@ function fetchWeather(component) {
 }
 
 // --- Recent Activity (4th widget, below Server Weather) ---------------
-// Uses Discourse's own /latest.json public endpoint — same reliability
-// pattern as the category cards in rp-categories.js — rather than
-// trying to relocate/restyle whatever native "Latest" panel a given
-// category-page-style setting happens to render.
+// Switched from /latest.json (one row per TOPIC, attributed to
+// whichever poster happened to be first in that topic's posters array
+// — not necessarily accurate, see the category-cards fix for the same
+// bug) to /posts.json, Discourse's own "latest posts site-wide" feed.
+// Each entry there is a real individual POST (a topic-starting post OR
+// a reply, exactly as requested) already carrying its own actual
+// author — no poster-array guessing needed at all.
 function fetchRecentActivity(component) {
   const count = settings.recent_activity_count;
   const load = async () => {
     try {
-      const res = await fetch("/latest.json?order=activity");
+      const res = await fetch("/posts.json");
       const data = await res.json();
       if (component.isDestroying || component.isDestroyed) {
         return;
       }
-      const users = data.users || [];
-      const items = (data.topic_list?.topics || []).slice(0, count).map((t) => {
-        const posterId = t.posters?.[0]?.user_id;
-        const user = users.find((u) => u.id === posterId);
-        return {
-          title: t.title,
-          url: `/t/${t.slug}/${t.id}`,
-          username: user?.username || "",
-          avatarUrl: user?.avatar_template ? user.avatar_template.replace("{size}", "30") : null,
-          timeAgo: relativeTime(t.bumped_at),
-        };
-      });
+      const items = (data.latest_posts || []).slice(0, count).map((p) => ({
+        title: p.topic_title,
+        url: `/t/${p.topic_slug}/${p.topic_id}/${p.post_number}`,
+        username: p.username || "",
+        avatarUrl: p.avatar_template ? p.avatar_template.replace("{size}", "30") : null,
+        timeAgo: relativeTime(p.created_at),
+      }));
       component.set("recentActivity", items);
     } catch (e) {
       // Non-critical widget: leave whatever was last shown (or empty).
