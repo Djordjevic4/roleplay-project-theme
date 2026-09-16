@@ -1836,6 +1836,12 @@ input.title-input {
     // everything after it (read-state) gets pushed to the right.
     gap: 8px;
     width: 100%;
+    // width: 100% + this padding without border-box made the
+    // rendered box 40px wider than its container (20px past the
+    // right edge), which is what kept pushing the post-date/read-
+    // state cluster slightly outside the card no matter how the
+    // internal alignment was adjusted.
+    box-sizing: border-box;
     padding: 14px 20px 4px;
     margin: 0;
     border-bottom: none;
