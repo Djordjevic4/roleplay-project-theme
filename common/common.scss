@@ -2620,3 +2620,138 @@ section.about {
     padding-top: 0;
   }
 }
+
+// -----------------------------------------------------------------
+// Discourse Chat drawer. Confirmed real classes via a live install's
+// DOM dump — reported issues were the sender name being unreadable
+// (dark text on our dark background) and hovering a message turning
+// its whole row white, so beyond fixing those two, this restyles the
+// rest of the drawer (navbar, composer, scroll button) to match the
+// rest of the theme's dark panel/border language instead of leaving
+// it on Discourse's default light-leaning chat colors.
+// -----------------------------------------------------------------
+.chat-drawer-container {
+  background: var(--rp-bg);
+  border: 1px solid var(--rp-border);
+  border-radius: var(--rp-radius-md);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+}
+
+.c-navbar-container {
+  background: var(--rp-panel-header);
+  border-bottom: 1px solid var(--rp-border);
+
+  .c-navbar__channel-title {
+    color: var(--rp-text);
+  }
+
+  .chat-channel-name_label {
+    color: var(--rp-text);
+    font-weight: 700;
+  }
+
+  .btn {
+    color: var(--rp-text-muted);
+    background: transparent;
+
+    &:hover {
+      color: var(--rp-text);
+      background: var(--rp-panel);
+    }
+  }
+}
+
+.chat-drawer-content,
+.chat-channel {
+  background: var(--rp-bg);
+}
+
+.chat-message-separator {
+  .chat-message-separator__text {
+    color: var(--rp-text-muted);
+    background: var(--rp-bg);
+  }
+
+  .chat-message-separator__line {
+    background: var(--rp-border);
+  }
+}
+
+.chat-message-container {
+  border-radius: var(--rp-radius-sm);
+
+  // Reported live: hovering a message turned its whole row solid
+  // white instead of the usual subtle dark highlight.
+  &:hover {
+    background: var(--rp-panel-header) !important;
+  }
+
+  .chat-message-info__username {
+    // Reported live: unreadable dark text against the dark
+    // background. Discourse's chat plugin can color this by the
+    // sender's group (see the .group--X class it also carries) —
+    // left as a possible future enhancement (see the per-group
+    // username-color discussion elsewhere), but readability comes
+    // first: a plain light color that's always legible here.
+    color: var(--rp-text) !important;
+    font-weight: 700;
+  }
+
+  .chat-message-info__date {
+    color: var(--rp-text-muted);
+  }
+
+  .chat-message-text,
+  .chat-cooked {
+    color: var(--rp-text);
+  }
+}
+
+.chat-scroll-to-bottom {
+  .chat-scroll-to-bottom__button {
+    background: var(--rp-panel);
+    border: 1px solid var(--rp-border);
+    color: var(--rp-text);
+
+    &:hover {
+      background: var(--rp-panel-header);
+    }
+  }
+}
+
+.chat-composer__wrapper,
+.chat-composer__outer-container {
+  background: var(--rp-panel);
+  border-top: 1px solid var(--rp-border);
+}
+
+.chat-composer__inner-container {
+  background: var(--rp-panel-header);
+  border: 1px solid var(--rp-border);
+  border-radius: var(--rp-radius-md);
+
+  .chat-composer__input {
+    color: var(--rp-text);
+    background: transparent;
+
+    &::placeholder {
+      color: var(--rp-text-muted);
+    }
+  }
+
+  .btn {
+    color: var(--rp-text-muted);
+
+    &:hover {
+      color: var(--rp-text);
+    }
+  }
+}
+
+.chat-composer-button.-send {
+  color: var(--rp-blue);
+
+  &:hover {
+    color: var(--rp-blue-hover);
+  }
+}
