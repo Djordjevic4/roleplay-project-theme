@@ -1037,7 +1037,10 @@ body.category-list .top-lists {
 .rp-cat-latest-title {
   font-size: 0.85em;
   font-weight: 600;
-  color: var(--rp-text);
+  // Now a real <a> (was a plain <span>) so it can link to the topic —
+  // some more specific rule for anchors was winning over this and
+  // turning it blue, so !important guarantees this wins instead.
+  color: var(--rp-text) !important;
   text-decoration: none;
   white-space: nowrap;
   overflow: hidden;
