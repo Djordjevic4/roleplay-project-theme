@@ -1827,13 +1827,46 @@ input.title-input {
   .post-infos {
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    // justify-content: space-between (the previous approach) spaces
+    // EVERY child evenly, which is why the lock icon and the "N
+    // edits" badge ended up far apart instead of grouped together.
+    // margin-left: auto on .post-info.post-date below creates two
+    // real clusters instead — everything before it (lock, edits)
+    // stays grouped on the left with a small gap, and it plus
+    // everything after it (read-state) gets pushed to the right.
+    gap: 8px;
     width: 100%;
     padding: 14px 20px 4px;
     margin: 0;
     border-bottom: none;
     color: var(--rp-text-muted);
-    font-size: 0.8em;
+    font-size: 0.85em;
+
+    .post-info {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+
+      svg {
+        width: 1.1em;
+        height: 1.1em;
+      }
+
+      button {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        background: none;
+        border: none;
+        padding: 0;
+        color: inherit;
+        font: inherit;
+      }
+    }
+
+    .post-info.post-date {
+      margin-left: auto;
+    }
   }
 
   .rp-post-topbar-actions {
@@ -1951,28 +1984,6 @@ input.title-input {
     }
   }
 
-  // Confirmed live: this small "Xm/Xh/Xd" post-age badge (plus the
-  // read-state circle next to it) is positioned assuming a wider
-  // native card — its right edge was landing ~19px past .row's own
-  // right edge, hanging off the card entirely. Repositioned explicitly
-  // against .row (already the positioning context for .post-menu-area
-  // above) so it always stays inside the card.
-  .post-info.post-date {
-    position: absolute;
-    top: 10px;
-    right: 40px;
-    color: var(--rp-text-muted);
-    font-size: 0.78em;
-    z-index: 2;
-  }
-
-  .read-state {
-    position: absolute;
-    top: 10px;
-    right: 14px;
-    z-index: 2;
-    color: var(--rp-text-muted);
-  }
 }
 
 .rp-post-user-info {
