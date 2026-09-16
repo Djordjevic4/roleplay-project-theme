@@ -2018,12 +2018,20 @@ button.more-actions,
 // delete), just unstyled and defaulting to a light background like
 // aside.quote and .fk-d-menu earlier.
 .staff-counters {
-  background: var(--rp-panel-header);
+  background: var(--rp-panel-header) !important;
   border: 1px solid var(--rp-red);
   border-radius: var(--rp-radius-md);
   margin-bottom: 12px;
   padding: 10px 16px;
   color: var(--rp-text);
+
+  // Confirmed pattern from elsewhere in this theme (aside.quote's
+  // .title, .details on the cover): an inner wrapper div can carry
+  // its own opaque background that sits on top of and hides the
+  // parent's, so this is neutralized explicitly rather than assumed.
+  > div {
+    background: transparent;
+  }
 
   a {
     display: flex;
